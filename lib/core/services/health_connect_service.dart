@@ -97,6 +97,30 @@ class HealthConnectService {
     }
   }
   
+  /// Unify sleep aggregation logic to avoid overcounting overlapping segments.
+  /// Prefers [SLEEP_SESSION] if available, otherwise sums up distinct [SLEEP_ASLEEP], [SLEEP_LIGHT], [SLEEP_DEEP], [SLEEP_REM] segments.
+  static int calculateTotalSleepMinutes(List<HealthDataPoint> data) {
+    if (data.isEmpty) return 0;
+
+    int sessionDuration = 0;
+    int stagesDuration = 0;
+
+    for (final point in data) {
+      final duration = point.dateTo.difference(point.dateFrom).inMinutes;
+
+      if (point.type == HealthDataType.SLEEP_SESSION) {
+        sessionDuration += duration;
+      } else if (point.type == HealthDataType.SLEEP_ASLEEP ||
+          point.type == HealthDataType.SLEEP_LIGHT ||
+          point.type == HealthDataType.SLEEP_DEEP ||
+          point.type == HealthDataType.SLEEP_REM) {
+        stagesDuration += duration;
+      }
+    }
+
+    return sessionDuration > 0 ? sessionDuration : stagesDuration;
+  }
+
   /// Fetch workout data for a given date range.
   Future<List<HealthDataPoint>> fetchWorkouts(DateTime start, DateTime end) async {
     try {

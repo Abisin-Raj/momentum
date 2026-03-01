@@ -317,7 +317,7 @@ The app includes a **3D recovery model** rendered via WebView and Three.js, back
 ### Prerequisites
 ```bash
 ✓ Flutter SDK 3.10.7 or later
-✓ Android SDK (min SDK 21)
+✓ Android SDK (min SDK 26)
 ✓ Android emulator or physical device
 ```
 
@@ -361,7 +361,7 @@ flutter build appbundle --release
 
 ## Platform Support
 
-- Android (min SDK 21 / Android 5.0 Lollipop)
+- Android (min SDK 26 / Android 8.0 Oreo)
 - iOS (not configured in current build)
 
 <div align="left">

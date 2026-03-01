@@ -74,20 +74,36 @@ final workoutInsightProvider = FutureProvider.family<Map<String, dynamic>, int>(
   };
 });
 // Daily Nutrition Summary (Today)
-final dailyNutritionProvider = StreamProvider<Map<String, double>>((ref) async* {
+final dailyNutritionProvider = StreamProvider<Map<String, double>>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  // Yield initial value
-  yield await db.getDailyNutritionSummary(DateTime.now());
+  final now = DateTime.now();
   
-  // Poll every time database updates (or manually invalidated). 
-  // For now, since getDailyNutritionSummary isn't a stream in DB, we'll just yield once.
-  // Ideally, add a stream variant in DB or invalidate this provider when adding food.
+  return db.watchFoodLogsForDate(now).map((logs) {
+    double calories = 0;
+    double protein = 0;
+    double carbs = 0;
+    double fats = 0;
+    
+    for (final log in logs) {
+      calories += log.calories;
+      protein += log.protein;
+      carbs += log.carbs;
+      fats += log.fats;
+    }
+    
+    return {
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fats': fats,
+    };
+  });
 });
 
 // Daily Food Logs List
-final dailyFoodLogsProvider = FutureProvider<List<dynamic>>((ref) async { // List<FoodLog> but dynamic to avoid import if not needed
+final dailyFoodLogsProvider = StreamProvider<List<FoodLog>>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return db.getFoodLogsForDate(DateTime.now());
+  return db.watchFoodLogsForDate(DateTime.now());
 });
 
 // Net Calories (Food - Workout)

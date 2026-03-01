@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/services/thumbnail_service.dart';
+import '../../../core/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class EditWorkoutScreen extends ConsumerStatefulWidget {
@@ -380,7 +381,7 @@ class _EditWorkoutScreenState extends ConsumerState<EditWorkoutScreen> {
               border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
               image: _thumbnailUrl != null
                   ? DecorationImage(
-                      image: CachedNetworkImageProvider(_thumbnailUrl!),
+                      image: ImageUtils.resolveImageProvider(_thumbnailUrl)!,
                       fit: BoxFit.cover,
                     )
                   : null,

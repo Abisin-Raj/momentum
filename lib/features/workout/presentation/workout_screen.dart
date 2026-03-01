@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import 'active_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:momentum/core/utils/image_utils.dart';
 import 'dart:io';
 
 /// Workout screen - shows list of workouts with completion states
@@ -544,28 +545,33 @@ class _WorkoutCard extends StatelessWidget {
           child: Row(
             children: [
             // Gradient thumbnail / icon
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: workout.thumbnailUrl == null ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _getGradientColors(index),
-                ) : null,
-                borderRadius: BorderRadius.circular(12),
-                image: workout.thumbnailUrl != null ? DecorationImage(
-                  image: workout.thumbnailUrl!.startsWith('http') 
-                    ? CachedNetworkImageProvider(workout.thumbnailUrl!)
-                    : FileImage(File(workout.thumbnailUrl!)) as ImageProvider,
-                  fit: BoxFit.cover,
-                ) : null,
-              ),
-              child: workout.thumbnailUrl == null ? Icon(
-                workout.isRestDay ? Icons.spa : _getWorkoutIcon(workout.clockType),
-                color: Colors.white,
-                size: 24,
-              ) : null,
+            Builder(
+              builder: (context) {
+                final imageProvider = ImageUtils.resolveImageProvider(workout.thumbnailUrl);
+                final hasImage = imageProvider != null;
+
+                return Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: !hasImage ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _getGradientColors(index),
+                    ) : null,
+                    borderRadius: BorderRadius.circular(12),
+                    image: hasImage ? DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ) : null,
+                  ),
+                  child: !hasImage ? Icon(
+                    workout.isRestDay ? Icons.spa : _getWorkoutIcon(workout.clockType),
+                    color: Colors.white,
+                    size: 24,
+                  ) : null,
+                );
+              },
             ),
 
             const SizedBox(width: 16),

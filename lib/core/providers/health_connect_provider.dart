@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health/health.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:drift/drift.dart' show Value;
+import '../utils/sleep_utils.dart';
 import '../services/health_connect_service.dart';
 import '../database/app_database.dart';
 import 'database_providers.dart';
@@ -170,40 +171,25 @@ class HealthNotifier extends _$HealthNotifier {
       Duration? totalSleep;
       
       if (sleepData.isNotEmpty) {
-        int totalMinutes = 0;
+        int totalMinutes = HealthConnectService.calculateTotalSleepMinutes(sleepData);
         int? deepSleep;
         int? remSleep;
         
-        int sessionDuration = 0;
-        int stagesDuration = 0;
-        
         for (final point in sleepData) {
           final duration = point.dateTo.difference(point.dateFrom).inMinutes;
-          
-          if (point.type == HealthDataType.SLEEP_SESSION) {
-            sessionDuration += duration;
-          } else if (point.type == HealthDataType.SLEEP_ASLEEP || 
-                     point.type == HealthDataType.SLEEP_LIGHT) { // Treat light as asleep
-            stagesDuration += duration;
-          } else if (point.type == HealthDataType.SLEEP_DEEP) {
+          if (point.type == HealthDataType.SLEEP_DEEP) {
             deepSleep = (deepSleep ?? 0) + duration;
-            stagesDuration += duration;
           } else if (point.type == HealthDataType.SLEEP_REM) {
             remSleep = (remSleep ?? 0) + duration;
-            stagesDuration += duration;
           }
         }
         
-        // Use session duration if available (most accurate total), otherwise sum of stages
-        totalMinutes = sessionDuration > 0 ? sessionDuration : stagesDuration;
         totalSleep = Duration(minutes: totalMinutes);
         
         // PERSIST: Save to database
         if (totalMinutes > 0) {
-          // Simple Recovery Score Calculation
-          // Target: 8 hours (480 mins) => 100%
-          int score = ((totalMinutes / 480) * 100).round();
-          if (score > 100) score = 100;
+          // Centralized Recovery Score Calculation
+          int score = SleepUtils.calculateRecoveryScore(totalMinutes);
           
           await ref.read(appDatabaseProvider).addSleepLog(SleepLogsCompanion(
                 date: Value(todayStart),

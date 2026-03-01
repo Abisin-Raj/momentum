@@ -230,8 +230,9 @@ class ActiveWorkoutSession extends _$ActiveWorkoutSession {
   }
   
   /// Cancel the current workout (don't save completion)
-  void cancelWorkout() {
-    // BackgroundService().stopService();
+  Future<void> cancelWorkout() async {
+    final db = ref.read(appDatabaseProvider);
+    await db.cleanupActiveSessions();
     state = null;
   }
 
@@ -282,8 +283,31 @@ class WorkoutManager extends _$WorkoutManager {
     final db = ref.read(appDatabaseProvider);
     await db.deleteWorkout(id);
     
+    // Normalize split after deletion
+    final remaining = await db.getAllWorkouts();
+    for (int i = 0; i < remaining.length; i++) {
+       await db.updateWorkoutOrder(remaining[i].id, i);
+    }
+    
+    final user = await db.getUser();
+    if (user != null) {
+       final newCount = remaining.length;
+       int newIndex = user.currentSplitIndex;
+       if (newIndex >= newCount && newCount > 0) {
+          newIndex = newCount - 1;
+       } else if (newCount == 0) {
+          newIndex = 0;
+       }
+       
+       await db.saveUser(user.toCompanion(true).copyWith(
+          splitDays: Value(newCount),
+          currentSplitIndex: Value(newIndex),
+       ));
+    }
+    
     ref.invalidate(workoutsStreamProvider);
     ref.invalidate(nextWorkoutProvider);
+    ref.invalidate(workoutProgressionProvider);
   }
   
   /// Reorder workouts
@@ -294,7 +318,6 @@ class WorkoutManager extends _$WorkoutManager {
     }
     
     ref.invalidate(workoutsStreamProvider);
-    ref.invalidate(nextWorkoutProvider);
     ref.invalidate(nextWorkoutProvider);
   }
 

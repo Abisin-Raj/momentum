@@ -223,7 +223,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> with 
                   
     if (newIsFullyDone) {
        _startCooldown(exerciseId);
-       _startCooldown(exerciseId);
        // _restTimer cancellation implicit by overwrite
        setState(() => _restingExerciseId = null);
        
@@ -358,42 +357,34 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> with 
     // Gather exercise data
     final exercises = <SessionExercisesCompanion>[];
     
-    // We need to iterate over known exercises. 
-    // Since we don't have the list here easily without async, 
-    // let's rely on _completedSets keys? No, some might be 0.
-    // Better to fetch exercises again or pass them?
-    // Let's assume _completedSets contains keys for touched exercises, 
-    // but untouched ones (0 sets) should technically be 0.
-    // Let's grab the IDs from _completedSets keys union _accumulatedDurations keys
-    final excIds = {..._completedSets.keys, ..._accumulatedDurations.keys, ..._exerciseNotes.keys}.toList();
-    
-    // For proper recording, we should ideally record ALL exercises in the workout, even if 0 sets.
-    // But since we don't have the full list in this method scope easily, let's record what we touched.
-    // (Or simpler: Refactor to allow access to exercise list logic, but sticking to this for now).
-    
-    for (final id in excIds) {
+    // We record ALL exercises in the workout to ensure complete data
+    for (final ex in _cachedExercises) {
+       final id = ex.id;
        // Total duration = Accumulated + Current (if active and not finished)
-       // But usually we finish via `_incrementSet` which flushes Current -> Accumulated.
-       // Exception: User confirms workout without finishing last set?
-       // Let's flush current if any.
        int totalSeconds = _accumulatedDurations[id] ?? 0;
        if (_currentWorkExerciseId == id) {
           totalSeconds += _currentWorkElapsed.inSeconds;
        }
 
-       // Parse reps from note if possible (added for progression math)
+       // Parse reps from note if possible
        final note = _exerciseNotes[id];
        int? actualReps;
        if (note != null && note.contains('reps')) {
          actualReps = int.tryParse(note.split(' ').first);
        }
+       
+       // Issue 2 Fix: Default reps to (target reps * completed sets) if manual reps not entered
+       final setsDone = _completedSets[id] ?? 0;
+       if (actualReps == null && setsDone > 0) {
+          actualReps = ex.reps * setsDone;
+       }
 
        exercises.add(SessionExercisesCompanion.insert(
          sessionId: widget.session.sessionId,
          exerciseId: id,
-         completedSets: Value(_completedSets[id] ?? 0),
+         completedSets: Value(setsDone),
          completedReps: Value(actualReps ?? 0), 
-         weightKg: Value(_exerciseWeights[id]),
+         weightKg: Value(_exerciseWeights[id] ?? ex.targetWeight),
          notes: Value(note),
          durationSeconds: Value(totalSeconds),
        ));

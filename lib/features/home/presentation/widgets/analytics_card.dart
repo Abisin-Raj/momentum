@@ -4,6 +4,7 @@ import 'package:momentum/core/providers/dashboard_providers.dart';
 import 'package:momentum/core/database/app_database.dart';
 import 'package:momentum/core/providers/database_providers.dart';
 import 'package:momentum/core/providers/health_connect_provider.dart';
+import 'package:momentum/core/providers/sleep_providers.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:momentum/core/services/settings_service.dart';
@@ -57,7 +58,11 @@ class AnalyticsCard extends ConsumerWidget {
           
           // 1. Recovery & Quick Stats Row
           // Pass the analytics data so we can access 'workoutsLast3Days'
-          _buildTopRow(context, ref, healthState, analyticsAsync.valueOrNull),
+          ref.watch(sleepSummaryProvider).when(
+            data: (summary) => _buildTopRow(context, ref, healthState, analyticsAsync.valueOrNull, summary),
+            loading: () => const Center(child: LinearProgressIndicator()),
+            error: (err, _) => const SizedBox.shrink(),
+          ),
           
           const SizedBox(height: 24),
           const Divider(height: 1),
@@ -227,15 +232,13 @@ class AnalyticsCard extends ConsumerWidget {
       ],
     );
   }
-  Widget _buildTopRow(BuildContext context, WidgetRef ref, dynamic healthState, Map<String, dynamic>? analyticsData) {
+  Widget _buildTopRow(BuildContext context, WidgetRef ref, dynamic healthState, Map<String, dynamic>? analyticsData, SleepSummary sleepSummary) {
     final colorScheme = Theme.of(context).colorScheme;
-    final sleepDuration = healthState.lastNightSleep;
-    final hasSleepData = sleepDuration != null;
-    final sleepHours = sleepDuration?.inHours ?? 7; // Default to neutral 7h if missing
+    final hasSleepData = sleepSummary.lastNight != null;
+    final sleepHours = (sleepSummary.lastNight?.durationMinutes ?? 420) / 60.0;
     
-    // Recovery Score Calculation
-    double score = 100;
-    if (sleepHours < 7) score -= (7 - sleepHours) * 10;
+    // Recovery Score Calculation (Centralized)
+    double score = sleepSummary.recoveryScore.toDouble();
     
     // Use actual workout history from analytics
     final workoutsLast3Days = (analyticsData != null && analyticsData.containsKey('workoutsLast3Days'))

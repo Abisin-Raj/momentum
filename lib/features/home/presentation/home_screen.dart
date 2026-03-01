@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/workout_progression_provider.dart';
@@ -23,6 +24,7 @@ import '../../../core/providers/smart_suggestion_provider.dart';
 
 
 import 'package:momentum/core/utils/screen_utils.dart';
+import '../../../core/utils/image_utils.dart';
 
 /// UI Constants for Home Screen
 class _HomeScreenConstants {
@@ -438,22 +440,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final colorScheme = theme.colorScheme;
     
     // Determine image provider
-    ImageProvider? imageProvider;
-    if (workout.thumbnailUrl != null && workout.thumbnailUrl!.isNotEmpty) {
-      final url = workout.thumbnailUrl!;
-      if (url.startsWith('http')) {
-        imageProvider = NetworkImage(url);
-      } else if (url.startsWith('assets/')) {
-        imageProvider = AssetImage(url);
-      } else {
-        final file = File(url);
-        if (file.existsSync()) {
-          imageProvider = FileImage(file);
-        } else {
-          debugPrint('Thumbnail file not found: $url');
-        }
-      }
-    }
+    final imageProvider = ImageUtils.resolveImageProvider(workout.thumbnailUrl);
     
     return LayoutBuilder(
       builder: (context, _) {
@@ -1020,7 +1007,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         FilledButton.icon(
           onPressed: () {
             // Navigate to split setup
-            Navigator.of(context).pushNamed('/split-setup');
+            context.push('/split-setup');
           },
           icon: const Icon(Icons.add),
           label: const Text('Create Your First Workout'),

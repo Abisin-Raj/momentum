@@ -4,6 +4,8 @@ import 'package:momentum/core/database/app_database.dart';
 import 'package:momentum/core/providers/database_providers.dart';
 import 'package:momentum/core/providers/health_connect_provider.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:momentum/core/providers/sleep_providers.dart';
+import 'package:momentum/core/utils/sleep_utils.dart';
 import 'themed_card.dart';
 
 class SleepCard extends ConsumerWidget {
@@ -11,10 +13,7 @@ class SleepCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sleepLogsAsync = ref.watch(sleepLogsProvider(days: 7));
     final healthState = ref.watch(healthNotifierProvider);
-
-
 
     return ThemedCard(
       padding: const EdgeInsets.all(24),
@@ -39,8 +38,8 @@ class SleepCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
-          sleepLogsAsync.when(
-            data: (logs) => _buildSleepContent(context, ref, logs),
+          ref.watch(sleepSummaryProvider).when(
+            data: (summary) => _buildSleepContent(context, ref, summary),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => const Text('Error loading sleep data'),
           ),
@@ -66,15 +65,9 @@ class SleepCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSleepContent(BuildContext context, WidgetRef ref, List<SleepLog> logs) {
-    final lastNight = logs.isNotEmpty ? logs.first : null;
-    
-    // Calculate average
-    double avgHours = 0;
-    if (logs.isNotEmpty) {
-      final totalMinutes = logs.fold<int>(0, (sum, log) => sum + log.durationMinutes);
-      avgHours = (totalMinutes / logs.length) / 60.0;
-    }
+  Widget _buildSleepContent(BuildContext context, WidgetRef ref, SleepSummary summary) {
+    final lastNight = summary.lastNight;
+    final avgHours = summary.avgHours7d;
 
     return Column(
       children: [

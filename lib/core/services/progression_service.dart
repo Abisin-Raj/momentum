@@ -43,13 +43,15 @@ class ProgressionService {
     if (se.completedSets < ex.sets) return false;
 
     // Check if total volume (reps) meets or exceeds target
+    final targetTotalReps = ex.sets * ex.reps;
+    
+    // If reps were done, they must meet the target
     if (se.completedReps > 0) {
-      final targetTotalReps = ex.sets * ex.reps;
       return se.completedReps >= targetTotalReps;
     }
 
-    // Fallback: if reps weren't logged, assume success if all sets were done
-    return true;
+    // If zero reps were recorded, we should NOT progress even if sets were checked
+    return false;
   }
 
   /// Mathematical increment logic

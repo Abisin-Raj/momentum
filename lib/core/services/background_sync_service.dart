@@ -42,16 +42,7 @@ void callbackDispatcher() {
         debugPrint("[BackgroundSync] Fetched ${sleepData.length} sleep data points.");
 
         if (sleepData.isNotEmpty) {
-           // Basic aggregation logic (Simplified version of HealthNotifier)
-           // If we have any 'SLEEP_ASLEEP' or 'SLEEP_IN_BED' segments
-           int totalMinutes = 0;
-           for (final point in sleepData) {
-              // Health package returns value in 'NumericHealthValue' for some types, 
-              // but for sleep it might be time intervals.
-              // Actually HealthDataPoint has dateFrom and dateTo.
-              final duration = point.dateTo.difference(point.dateFrom);
-              totalMinutes += duration.inMinutes;
-           }
+           int totalMinutes = HealthConnectService.calculateTotalSleepMinutes(sleepData);
            
            if (totalMinutes > 60) { // Only log if significant sleep found
              // Associate with the "Wake Up Day" (End date)

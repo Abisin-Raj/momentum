@@ -10,6 +10,7 @@ import '../../../core/providers/workout_providers.dart';
 import '../../../core/services/thumbnail_service.dart';
 import '../../../core/services/image_storage_service.dart';
 import '../../../core/constants/muscle_data.dart';
+import '../../../core/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// Screen to create a workout as part of a split
@@ -107,6 +108,15 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     }
 
 
+    final steps = [
+      _buildNameStep(),
+      if (!_isRestDay) ...[
+        _buildThumbnailStep(),
+        _buildExercisesStep(),
+        _buildClockStep(),
+      ],
+    ];
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
 
@@ -134,7 +144,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
         children: [
           // Step indicator
           LinearProgressIndicator(
-            value: (_currentStep + 1) / (_isRestDay ? 1 : 4),
+            value: (_currentStep + 1) / steps.length,
             backgroundColor: colorScheme.surfaceContainerHighest,
 
             color: colorScheme.primary,
@@ -146,15 +156,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) => setState(() => _currentStep = index),
-              children: [
-                _buildNameStep(),
-                _buildThumbnailStep(),
-                _buildExercisesStep(),
-                _buildNameStep(),
-                if (!_isRestDay) _buildThumbnailStep(),
-                if (!_isRestDay) _buildExercisesStep(),
-                if (!_isRestDay) _buildClockStep(),
-              ],
+              children: steps,
             ),
 
           ),
@@ -200,11 +202,9 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                             color: colorScheme.onPrimary,
                           ),
                         )
-
                       : Text(
-                          _currentStep == (_isRestDay ? 0 : 3) 
- 
-                              ? (widget.existingWorkout != null ? 'Save Changes' : (widget.isStandalone ? 'Create Workout' : (widget.index < widget.totalDays ? 'Next Workout' : 'Finish Split')))
+                          _currentStep == steps.length - 1
+                              ? _getFinishButtonLabel()
                               : 'Continue',
                         ),
                 ),
@@ -217,20 +217,23 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   }
 
   bool _canProceed() {
+    if (_isRestDay) {
+      return _nameController.text.trim().isNotEmpty && _nameController.text.length <= 50;
+    }
+
     switch (_currentStep) {
       case 0: return _nameController.text.trim().isNotEmpty && _nameController.text.length <= 50;
-      case 1: return _selectedThumbnail != null;
+      case 1: return true; // Thumbnail is optional (Skip button handles null)
       case 2: return _exercises.isNotEmpty;
-      case 3: return true;
+      case 3: return true; // Clock selection is always valid
       default: return false;
     }
   }
 
   void _nextStep() async {
-    // If rest day, we only have step 0 (Name), so we finish immediately if valid
-    if (_isRestDay && _currentStep == 0) {
-      // Proceed to save
-    } else if (_currentStep < 3) {
+    final stepsCount = _isRestDay ? 1 : 4;
+    
+    if (_currentStep < stepsCount - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -313,7 +316,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     final w = widget.existingWorkout!;
     
     // Prepare thumbnail path
-    String? thumbPath = _isRestDay ? 'assets/images/rest_day.jpg' : _selectedThumbnail;
+    String? thumbPath = _isRestDay ? null : _selectedThumbnail;
     if (thumbPath != null && thumbPath.startsWith('http')) {
       thumbPath = await ImageStorageService.saveImageOffline(thumbPath);
     }
@@ -357,7 +360,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     final _ = ref.read(workoutManagerProvider.notifier);
     
     // Prepare thumbnail path
-    String? thumbPath = _isRestDay ? 'assets/images/rest_day.jpg' : _selectedThumbnail;
+    String? thumbPath = _isRestDay ? null : _selectedThumbnail;
     if (thumbPath != null && thumbPath.startsWith('http')) {
       thumbPath = await ImageStorageService.saveImageOffline(thumbPath);
     }
@@ -394,6 +397,13 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     
     // Refresh workout list
     ref.invalidate(workoutsStreamProvider);
+  }
+
+  String _getFinishButtonLabel() {
+    if (widget.existingWorkout != null) return 'Save Changes';
+    if (widget.isStandalone) return 'Create Workout';
+    if (widget.index < widget.totalDays) return 'Next Workout';
+    return 'Finish Split';
   }
 
   // STEP 1: Name

@@ -439,10 +439,9 @@ class _SplitSetupScreenState extends ConsumerState<SplitSetupScreen> {
         ],
       );
 
-      // DAY 8: Rest
       await createDay(
         name: 'Rest Day', shortCode: 'R',
-        thumbnailUrl: 'assets/images/rest_day.jpg',
+        thumbnailUrl: null,
         dayIndex: 7, clockType: ClockType.none, isRestDay: true,
       );
 

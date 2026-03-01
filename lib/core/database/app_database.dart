@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'connection/connection.dart' as impl;
 import '../utils/calorie_calculator.dart';
+import '../utils/volume_calculator.dart';
 
 part 'app_database.g.dart';
 
@@ -672,8 +673,11 @@ class AppDatabase extends _$AppDatabase {
 
     for (final r in results) {
       final sExec = r.readTable(sessionExercises);
-      final weight = sExec.weightKg ?? userWeight; // Use full bodyweight
-      totalVolume += weight * sExec.completedReps;
+      totalVolume += VolumeCalculator.calculateVolume(
+        weightKg: sExec.weightKg,
+        reps: sExec.completedReps,
+        bodyWeightKg: userWeight,
+      );
       totalSets += sExec.completedSets;
     }
 
@@ -714,12 +718,11 @@ class AppDatabase extends _$AppDatabase {
     for (final row in result) {
       final se = row.readTable(sessionExercises);
       
-      // Use full bodyweight for bodyweight exercises (when weightKg is null)
-      // This is more accurate than the previous 0.8x multiplier
-      final weight = se.weightKg ?? userWeight;
-      
-      totalVolume += weight * se.completedReps; 
-      // Note: completedReps is total reps done across all sets (per schema)
+      totalVolume += VolumeCalculator.calculateVolume(
+        weightKg: se.weightKg,
+        reps: se.completedReps,
+        bodyWeightKg: userWeight,
+      );
     }
     
     return totalVolume;
@@ -1127,8 +1130,11 @@ class AppDatabase extends _$AppDatabase {
       int totalReps = 0;
       
       for (final se in sessionExercisesList) {
-        final weight = se.weightKg ?? bodyWeight;
-        totalVolume += weight * se.completedReps;
+        totalVolume += VolumeCalculator.calculateVolume(
+          weightKg: se.weightKg,
+          reps: se.completedReps,
+          bodyWeightKg: bodyWeight,
+        );
         totalReps += se.completedReps;
       }
       
@@ -1304,8 +1310,16 @@ class AppDatabase extends _$AppDatabase {
     int totalReps = 0;
     int totalSets = 0;
     
+    // Get user weight for all-time stats fallback
+    final user = await getUser();
+    final userWeight = user?.weightKg ?? 70.0;
+
     for (final se in allSessionEx) {
-      totalVolume += (se.weightKg ?? 0) * se.completedReps;
+      totalVolume += VolumeCalculator.calculateVolume(
+        weightKg: se.weightKg,
+        reps: se.completedReps,
+        bodyWeightKg: userWeight,
+      );
       totalReps += se.completedReps;
       totalSets += se.completedSets;
     }
@@ -1330,13 +1344,21 @@ class AppDatabase extends _$AppDatabase {
     final result = await query.get();
     final volumeByDay = <DateTime, double>{};
     
+    // Get user weight for trend fallback
+    final user = await getUser();
+    final userWeight = user?.weightKg ?? 70.0;
+
     for (final row in result) {
       final session = row.readTable(sessions);
       final se = row.readTable(sessionExercises);
       
       final date = DateTime(session.startedAt.year, session.startedAt.month, session.startedAt.day);
-      final volume = (se.weightKg ?? 0) * se.completedReps;
-      volumeByDay[date] = (volumeByDay[date] ?? 0) + volume.toDouble();
+      final volume = VolumeCalculator.calculateVolume(
+        weightKg: se.weightKg,
+        reps: se.completedReps,
+        bodyWeightKg: userWeight,
+      );
+      volumeByDay[date] = (volumeByDay[date] ?? 0) + volume;
     }
     
     final trend = volumeByDay.entries.map((e) => {'date': e.key, 'volume': e.value}).toList();
