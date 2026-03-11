@@ -51,3 +51,5 @@ analysis.txt
 analysis_final.txt
 analysis_final_v3.txt
 jdk17/
+.setup_logs/
+git_status.txt
