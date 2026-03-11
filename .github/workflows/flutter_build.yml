@@ -1,4 +1,4 @@
-name: Flutter Build
+name: Flutter CI/CD
 
 on:
   push:
@@ -8,84 +8,141 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    name: Build APK
+  # ─── Stage 1: Analyze & Test ────────────────────────────────────────────────
+  analyze:
+    name: Analyze & Test
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     env:
-      _JAVA_OPTIONS: -Xmx5g
-      DART_VM_OPTIONS: --old_gen_heap_size=4096
-    
+      _JAVA_OPTIONS: -Xmx4g
+      DART_VM_OPTIONS: --old_gen_heap_size=2048
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Remove local Java Home from gradle.properties
-        run: |
-          if [ -f android/gradle.properties ]; then
-            sed -i '/org.gradle.java.home/d' android/gradle.properties
-          fi
-      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
           cache-path: '${{ runner.tool_cache }}/flutter'
-          
+
+      - name: Remove local Java Home from gradle.properties
+        run: |
+          if [ -f android/gradle.properties ]; then
+            sed -i '/org.gradle.java.home/d' android/gradle.properties
+          fi
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze code
+        run: flutter analyze --fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+  # ─── Stage 2: Build APK ─────────────────────────────────────────────────────
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    needs: analyze
+    permissions:
+      contents: write
+    env:
+      _JAVA_OPTIONS: -Xmx5g
+      DART_VM_OPTIONS: --old_gen_heap_size=4096
+      GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5120m -XX:MaxMetaspaceSize=1024m"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter'
+
+      - name: Remove local Java Home from gradle.properties
+        run: |
+          if [ -f android/gradle.properties ]; then
+            sed -i '/org.gradle.java.home/d' android/gradle.properties
+          fi
+
       - name: Diagnostic Info
         run: |
           echo "==== Flutter Doctor ===="
           flutter doctor -v
           echo "==== Java Version ===="
           java -version
-          echo "==== Environment Variables ===="
-          printenv | grep -E 'JAVA|FLUTTER|DART'
-          
+
       - name: Verify Assets
         run: |
           echo "==== Listing 3D Assets ===="
           ls -R assets/3d/
-          
+
       - name: Clean project
         run: flutter clean
 
       - name: Get dependencies
-        run: flutter pub get -v
-        
-      - name: Run code generation
-        run: dart run build_runner build --delete-conflicting-outputs --verbose
-        
+        run: flutter pub get
 
-      - name: Build APK (Verbose)
-        env:
-          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5120m -XX:MaxMetaspaceSize=1024m"
-        run: |
-          echo "Starting Flutter Build APK..."
-          flutter build apk --release -v
-        
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK (Release)
+        run: flutter build apk --release
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+
+  # ─── Stage 3: Release ───────────────────────────────────────────────────────
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apk
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: app-release.apk
           name: Release ${{ github.ref_name }}
           body: |
-            Automated Release for ${{ github.ref_name }}
+            ## Momentum ${{ github.ref_name }}
             
-            Changes in this version:
+            Automated release built from commit `${{ github.sha }}`.
+            
+            **Changes in this version:**
             ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false
