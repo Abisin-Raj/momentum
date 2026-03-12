@@ -74,6 +74,40 @@ final geminiApiKeyProvider = AutoDisposeFutureProvider<String?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GeminiApiKeyRef = AutoDisposeFutureProviderRef<String?>;
+String _$gemini2ApiKeyHash() => r'311e7dd1a04b1386f845aee830a48350e8e55bee';
+
+/// See also [gemini2ApiKey].
+@ProviderFor(gemini2ApiKey)
+final gemini2ApiKeyProvider = AutoDisposeFutureProvider<String?>.internal(
+  gemini2ApiKey,
+  name: r'gemini2ApiKeyProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$gemini2ApiKeyHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef Gemini2ApiKeyRef = AutoDisposeFutureProviderRef<String?>;
+String _$groqApiKeyHash() => r'59139d17e0562c4a164c05fa0a7ff09ae0b8d7cd';
+
+/// See also [groqApiKey].
+@ProviderFor(groqApiKey)
+final groqApiKeyProvider = AutoDisposeFutureProvider<String?>.internal(
+  groqApiKey,
+  name: r'groqApiKeyProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$groqApiKeyHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef GroqApiKeyRef = AutoDisposeFutureProviderRef<String?>;
 String _$restTimerHash() => r'79a520d0b7f9e619498a5447e78e56df345832b8';
 
 /// See also [restTimer].
