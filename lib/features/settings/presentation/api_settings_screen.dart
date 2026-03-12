@@ -17,6 +17,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
   final _unsplashController = TextEditingController();
   final _geminiController = TextEditingController();
   final _gemini2Controller = TextEditingController();
+  final _groqController = TextEditingController();
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isFetchingModels = false;
@@ -35,6 +36,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     final unsplash = await service.getUnsplashKey();
     final gemini = await service.getGeminiKey();
     final gemini2 = await service.getGemini2Key();
+    final groq = await service.getGroqKey();
     final model = await service.getGeminiModel();
     final source = await service.getImageSource();
 
@@ -48,6 +50,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
           _unsplashController.text != newUnsplash ||
           _geminiController.text != newGemini ||
           _gemini2Controller.text != newGemini2 ||
+          _groqController.text != (groq ?? '') ||
           _selectedGeminiModel != model ||
           _selectedImageSource != source ||
           _isLoading;
@@ -58,6 +61,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
           _unsplashController.text = newUnsplash;
           _geminiController.text = newGemini;
           _gemini2Controller.text = newGemini2;
+          _groqController.text = groq ?? '';
           _selectedGeminiModel = model;
           _selectedImageSource = source;
           _isLoading = false;
@@ -72,6 +76,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     _unsplashController.dispose();
     _geminiController.dispose();
     _gemini2Controller.dispose();
+    _groqController.dispose();
     super.dispose();
   }
 
@@ -82,6 +87,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     await service.setUnsplashKey(_unsplashController.text.trim());
     await service.setGeminiKey(_geminiController.text.trim());
     await service.setGemini2Key(_gemini2Controller.text.trim());
+    await service.setGroqKey(_groqController.text.trim());
     await service.setImageSource(_selectedImageSource);
     
     // Invalidate providers
@@ -226,6 +232,14 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
                      icon: Icons.auto_awesome_outlined,
                    ),
                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      context,
+                      controller: _groqController,
+                      label: "Groq API Key",
+                      hint: "Enables Groq Speedster Agent",
+                      icon: Icons.bolt,
+                    ),
                    Align(
                      alignment: Alignment.centerRight,
                      child: TextButton.icon(

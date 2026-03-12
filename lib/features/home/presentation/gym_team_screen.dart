@@ -38,6 +38,7 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
     try {
       final geminiKey = await ref.read(settingsServiceProvider).getGeminiKey();
       final gemini2Key = await ref.read(settingsServiceProvider).getGemini2Key();
+      final groqKey = await ref.read(settingsServiceProvider).getGroqKey();
 
       // Simulate group chat responses
       if (geminiKey != null && geminiKey.isNotEmpty) {
@@ -46,6 +47,10 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
       
       if (gemini2Key != null && gemini2Key.isNotEmpty) {
         // Build Gemini Beta response logic here
+      }
+
+      if (groqKey != null && groqKey.isNotEmpty) {
+        // Build Groq Speedster response logic here
       }
 
     } catch (e) {
@@ -65,7 +70,7 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
         title: const Column(
           children: [
             Text('GYM TEAM', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            Text('Dual Gemini Agents', style: TextStyle(fontSize: 10, letterSpacing: 1.2)),
+            Text('Gemini & Groq Agents', style: TextStyle(fontSize: 10, letterSpacing: 1.2)),
           ],
         ),
         centerTitle: true,
@@ -77,7 +82,7 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 _buildSystemMessage(
-                  'Welcome to the Gym Team! Your dual Gemini experts are ready to help you reach your goals.',
+                  'Welcome to the Gym Team! Your Gemini and Groq experts are ready to help you reach your goals.',
                 ),
                 _buildChatMessage(
                   role: 'Gemini Alpha',
@@ -90,6 +95,12 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
                   message: 'I can help with nutrition planning and motivation. Let’s get started!',
                   isAi: true,
                   color: Colors.cyanAccent,
+                ),
+                _buildChatMessage(
+                  role: 'Groq Speedster',
+                  message: 'I\'m here for lightning-fast responses and quick tips. What\'s on your mind?',
+                  isAi: true,
+                  color: Colors.orangeAccent,
                 ),
               ],
             ),
