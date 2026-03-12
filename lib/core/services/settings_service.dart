@@ -10,6 +10,7 @@ class SettingsService {
   static const String _keyPexels = 'api_key_pexels';
   static const String _keyUnsplash = 'api_key_unsplash';
   static const String _keyGemini = 'gemini_api_key';
+  static const String _keyGemini2 = 'gemini_api_key_2';
   static const String _keyRestTimer = 'rest_timer_seconds';
   static const String _keyWeightUnit = 'weight_unit'; // 'kg' or 'lbs'
   static const String _keyWidgetTheme = 'widget_theme'; // 'classic', 'liquid_glass'
@@ -142,6 +143,14 @@ class SettingsService {
     return value;
   }
 
+  Future<void> setGemini2Key(String key) async {
+    await _storage.write(key: _keyGemini2, value: key);
+  }
+
+  Future<String?> getGemini2Key() async {
+    return await _storage.read(key: _keyGemini2);
+  }
+
   Future<void> setGeminiModel(String model) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyGeminiModel, model);
@@ -201,6 +210,11 @@ Future<String?> unsplashApiKey(Ref ref) async {
 @riverpod
 Future<String?> geminiApiKey(Ref ref) async {
   return ref.watch(settingsServiceProvider).getGeminiKey();
+}
+
+@riverpod
+Future<String?> gemini2ApiKey(Ref ref) async {
+  return ref.watch(settingsServiceProvider).getGemini2Key();
 }
 
 @riverpod
