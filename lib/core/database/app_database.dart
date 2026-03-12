@@ -113,6 +113,15 @@ class DietChatMessages extends Table {
   BoolColumn get isProcessed => boolean().withDefault(const Constant(true))();
 }
 
+/// CouncilMessages table - stores unified multi-agent chat history
+class CouncilMessages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get role => text()(); // "user" or specific AI model name
+  TextColumn get content => text()();
+  TextColumn get room => text().withLength(min: 1, max: 20)(); // "fitness" or "nutrition"
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 /// HomeChatMessages table - stores AI chat history for home assistant
 class HomeChatMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -123,12 +132,12 @@ class HomeChatMessages extends Table {
 }
 
 /// The main application database
-@DriftDatabase(tables: [Users, Workouts, Sessions, Exercises, SessionExercises, FoodLogs, SleepLogs, DietChatMessages, HomeChatMessages])
+@DriftDatabase(tables: [Users, Workouts, Sessions, Exercises, SessionExercises, FoodLogs, SleepLogs, DietChatMessages, HomeChatMessages, CouncilMessages])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.openConnection());
   
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration {
@@ -227,6 +236,11 @@ class AppDatabase extends _$AppDatabase {
           // Schema v19 changes:
           // Add HomeChatMessages table
           await m.createTable(homeChatMessages);
+        }
+        if (from < 20) {
+          // Schema v20 changes:
+          // Add CouncilMessages table
+          await m.createTable(councilMessages);
         }
       },
     );
@@ -482,6 +496,24 @@ class AppDatabase extends _$AppDatabase {
       
   /// Clear home chat history
   Future<int> clearHomeChatHistory() => delete(homeChatMessages).go();
+  
+
+  // ===== Council Chat Operations =====
+  
+  /// Watch council chat history for a specific room
+  Stream<List<CouncilMessage>> watchCouncilChatHistory(String room) =>
+      (select(councilMessages)
+        ..where((t) => t.room.equals(room))
+        ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+      .watch();
+      
+  /// Add a message to council chat
+  Future<int> addCouncilMessage(CouncilMessagesCompanion message) =>
+      into(councilMessages).insert(message);
+      
+  /// Clear council chat history for a room
+  Future<int> clearCouncilChatHistory(String room) => 
+      (delete(councilMessages)..where((t) => t.room.equals(room))).go();
   
 
   // ===== Progress/History Operations =====

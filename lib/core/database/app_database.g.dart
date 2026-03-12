@@ -4607,6 +4607,350 @@ class HomeChatMessagesCompanion extends UpdateCompanion<HomeChatMessage> {
   }
 }
 
+class $CouncilMessagesTable extends CouncilMessages
+    with TableInfo<$CouncilMessagesTable, CouncilMessage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CouncilMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _roomMeta = const VerificationMeta('room');
+  @override
+  late final GeneratedColumn<String> room = GeneratedColumn<String>(
+    'room',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 20,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, role, content, room, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'council_messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CouncilMessage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('room')) {
+      context.handle(
+        _roomMeta,
+        room.isAcceptableOrUnknown(data['room']!, _roomMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roomMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CouncilMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CouncilMessage(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      room: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}room'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CouncilMessagesTable createAlias(String alias) {
+    return $CouncilMessagesTable(attachedDatabase, alias);
+  }
+}
+
+class CouncilMessage extends DataClass implements Insertable<CouncilMessage> {
+  final int id;
+  final String role;
+  final String content;
+  final String room;
+  final DateTime createdAt;
+  const CouncilMessage({
+    required this.id,
+    required this.role,
+    required this.content,
+    required this.room,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['role'] = Variable<String>(role);
+    map['content'] = Variable<String>(content);
+    map['room'] = Variable<String>(room);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CouncilMessagesCompanion toCompanion(bool nullToAbsent) {
+    return CouncilMessagesCompanion(
+      id: Value(id),
+      role: Value(role),
+      content: Value(content),
+      room: Value(room),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CouncilMessage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CouncilMessage(
+      id: serializer.fromJson<int>(json['id']),
+      role: serializer.fromJson<String>(json['role']),
+      content: serializer.fromJson<String>(json['content']),
+      room: serializer.fromJson<String>(json['room']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'role': serializer.toJson<String>(role),
+      'content': serializer.toJson<String>(content),
+      'room': serializer.toJson<String>(room),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CouncilMessage copyWith({
+    int? id,
+    String? role,
+    String? content,
+    String? room,
+    DateTime? createdAt,
+  }) => CouncilMessage(
+    id: id ?? this.id,
+    role: role ?? this.role,
+    content: content ?? this.content,
+    room: room ?? this.room,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  CouncilMessage copyWithCompanion(CouncilMessagesCompanion data) {
+    return CouncilMessage(
+      id: data.id.present ? data.id.value : this.id,
+      role: data.role.present ? data.role.value : this.role,
+      content: data.content.present ? data.content.value : this.content,
+      room: data.room.present ? data.room.value : this.room,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CouncilMessage(')
+          ..write('id: $id, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('room: $room, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, role, content, room, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CouncilMessage &&
+          other.id == this.id &&
+          other.role == this.role &&
+          other.content == this.content &&
+          other.room == this.room &&
+          other.createdAt == this.createdAt);
+}
+
+class CouncilMessagesCompanion extends UpdateCompanion<CouncilMessage> {
+  final Value<int> id;
+  final Value<String> role;
+  final Value<String> content;
+  final Value<String> room;
+  final Value<DateTime> createdAt;
+  const CouncilMessagesCompanion({
+    this.id = const Value.absent(),
+    this.role = const Value.absent(),
+    this.content = const Value.absent(),
+    this.room = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  CouncilMessagesCompanion.insert({
+    this.id = const Value.absent(),
+    required String role,
+    required String content,
+    required String room,
+    this.createdAt = const Value.absent(),
+  }) : role = Value(role),
+       content = Value(content),
+       room = Value(room);
+  static Insertable<CouncilMessage> custom({
+    Expression<int>? id,
+    Expression<String>? role,
+    Expression<String>? content,
+    Expression<String>? room,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (role != null) 'role': role,
+      if (content != null) 'content': content,
+      if (room != null) 'room': room,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  CouncilMessagesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? role,
+    Value<String>? content,
+    Value<String>? room,
+    Value<DateTime>? createdAt,
+  }) {
+    return CouncilMessagesCompanion(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      content: content ?? this.content,
+      room: room ?? this.room,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (room.present) {
+      map['room'] = Variable<String>(room.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CouncilMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('room: $room, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4625,6 +4969,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HomeChatMessagesTable homeChatMessages = $HomeChatMessagesTable(
     this,
   );
+  late final $CouncilMessagesTable councilMessages = $CouncilMessagesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4639,6 +4986,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     sleepLogs,
     dietChatMessages,
     homeChatMessages,
+    councilMessages,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7808,6 +8156,206 @@ typedef $$HomeChatMessagesTableProcessedTableManager =
       HomeChatMessage,
       PrefetchHooks Function()
     >;
+typedef $$CouncilMessagesTableCreateCompanionBuilder =
+    CouncilMessagesCompanion Function({
+      Value<int> id,
+      required String role,
+      required String content,
+      required String room,
+      Value<DateTime> createdAt,
+    });
+typedef $$CouncilMessagesTableUpdateCompanionBuilder =
+    CouncilMessagesCompanion Function({
+      Value<int> id,
+      Value<String> role,
+      Value<String> content,
+      Value<String> room,
+      Value<DateTime> createdAt,
+    });
+
+class $$CouncilMessagesTableFilterComposer
+    extends Composer<_$AppDatabase, $CouncilMessagesTable> {
+  $$CouncilMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get room => $composableBuilder(
+    column: $table.room,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CouncilMessagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CouncilMessagesTable> {
+  $$CouncilMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get room => $composableBuilder(
+    column: $table.room,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CouncilMessagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CouncilMessagesTable> {
+  $$CouncilMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get room =>
+      $composableBuilder(column: $table.room, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$CouncilMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CouncilMessagesTable,
+          CouncilMessage,
+          $$CouncilMessagesTableFilterComposer,
+          $$CouncilMessagesTableOrderingComposer,
+          $$CouncilMessagesTableAnnotationComposer,
+          $$CouncilMessagesTableCreateCompanionBuilder,
+          $$CouncilMessagesTableUpdateCompanionBuilder,
+          (
+            CouncilMessage,
+            BaseReferences<
+              _$AppDatabase,
+              $CouncilMessagesTable,
+              CouncilMessage
+            >,
+          ),
+          CouncilMessage,
+          PrefetchHooks Function()
+        > {
+  $$CouncilMessagesTableTableManager(
+    _$AppDatabase db,
+    $CouncilMessagesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CouncilMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CouncilMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CouncilMessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String> room = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => CouncilMessagesCompanion(
+                id: id,
+                role: role,
+                content: content,
+                room: room,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String role,
+                required String content,
+                required String room,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => CouncilMessagesCompanion.insert(
+                id: id,
+                role: role,
+                content: content,
+                room: room,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CouncilMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CouncilMessagesTable,
+      CouncilMessage,
+      $$CouncilMessagesTableFilterComposer,
+      $$CouncilMessagesTableOrderingComposer,
+      $$CouncilMessagesTableAnnotationComposer,
+      $$CouncilMessagesTableCreateCompanionBuilder,
+      $$CouncilMessagesTableUpdateCompanionBuilder,
+      (
+        CouncilMessage,
+        BaseReferences<_$AppDatabase, $CouncilMessagesTable, CouncilMessage>,
+      ),
+      CouncilMessage,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7830,4 +8378,6 @@ class $AppDatabaseManager {
       $$DietChatMessagesTableTableManager(_db, _db.dietChatMessages);
   $$HomeChatMessagesTableTableManager get homeChatMessages =>
       $$HomeChatMessagesTableTableManager(_db, _db.homeChatMessages);
+  $$CouncilMessagesTableTableManager get councilMessages =>
+      $$CouncilMessagesTableTableManager(_db, _db.councilMessages);
 }

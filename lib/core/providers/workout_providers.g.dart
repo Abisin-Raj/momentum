@@ -25,7 +25,7 @@ final activeWorkoutSessionProvider =
     );
 
 typedef _$ActiveWorkoutSession = Notifier<ActiveSession?>;
-String _$workoutManagerHash() => r'1a9ba40d565221830426ceb0309a0c38bad13abe';
+String _$workoutManagerHash() => r'30eec630413dcf0dded54dce8c80acfa29b92557';
 
 /// Provider for adding a new workout
 ///
