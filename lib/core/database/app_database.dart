@@ -7,12 +7,7 @@ import '../utils/volume_calculator.dart';
 part 'app_database.g.dart';
 
 /// Clock types for workouts
-enum ClockType {
-  none,
-  stopwatch,
-  timer,
-  alarm,
-}
+enum ClockType { none, stopwatch, timer, alarm }
 
 /// Users table - stores user profile
 class Users extends Table {
@@ -22,8 +17,11 @@ class Users extends Table {
   RealColumn get heightCm => real().nullable()();
   RealColumn get weightKg => real().nullable()();
   TextColumn get goal => text().nullable()();
-  IntColumn get splitDays => integer().nullable()(); // Number of days in split (e.g. 3, 4, 5)
-  IntColumn get currentSplitIndex => integer().withDefault(const Constant(0))(); // Current position in split (0 to splitDays-1)
+  IntColumn get splitDays =>
+      integer().nullable()(); // Number of days in split (e.g. 3, 4, 5)
+  IntColumn get currentSplitIndex => integer().withDefault(
+    const Constant(0),
+  )(); // Current position in split (0 to splitDays-1)
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -31,25 +29,30 @@ class Users extends Table {
 class Workouts extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
-  TextColumn get shortCode => text().withLength(min: 1, max: 1)(); // Single letter
+  TextColumn get shortCode =>
+      text().withLength(min: 1, max: 1)(); // Single letter
   TextColumn get description => text().nullable()();
   TextColumn get thumbnailUrl => text().nullable()(); // URL or asset path
   IntColumn get orderIndex => integer()(); // Position in cycle
   BoolColumn get isRestDay => boolean().withDefault(const Constant(false))();
-  IntColumn get clockType => intEnum<ClockType>().withDefault(const Constant(0))();
+  IntColumn get clockType =>
+      intEnum<ClockType>().withDefault(const Constant(0))();
 
-  IntColumn get timerDurationSeconds => integer().nullable()(); // For timer type
+  IntColumn get timerDurationSeconds =>
+      integer().nullable()(); // For timer type
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// Exercises table - stores exercises for each workout
 class Exercises extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get workoutId => integer().references(Workouts, #id, onDelete: KeyAction.cascade)();
+  IntColumn get workoutId =>
+      integer().references(Workouts, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text()();
   IntColumn get sets => integer().withDefault(const Constant(3))();
   IntColumn get reps => integer().withDefault(const Constant(10))();
-  TextColumn get primaryMuscleGroup => text().nullable()(); // e.g., "Chest", "Back", "Legs"
+  TextColumn get primaryMuscleGroup =>
+      text().nullable()(); // e.g., "Chest", "Back", "Legs"
   IntColumn get orderIndex => integer()();
   RealColumn get targetWeight => real().withDefault(const Constant(0.0))();
 }
@@ -68,12 +71,16 @@ class Sessions extends Table {
 /// SessionExercises table - stores completed exercise data per session
 class SessionExercises extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get sessionId => integer().references(Sessions, #id, onDelete: KeyAction.cascade)();
-  IntColumn get exerciseId => integer().references(Exercises, #id, onDelete: KeyAction.cascade)();
+  IntColumn get sessionId =>
+      integer().references(Sessions, #id, onDelete: KeyAction.cascade)();
+  IntColumn get exerciseId =>
+      integer().references(Exercises, #id, onDelete: KeyAction.cascade)();
   IntColumn get completedSets => integer().withDefault(const Constant(0))();
-  IntColumn get completedReps => integer().withDefault(const Constant(0))(); // Total reps done
+  IntColumn get completedReps =>
+      integer().withDefault(const Constant(0))(); // Total reps done
   RealColumn get weightKg => real().nullable()(); // Weight used (kg)
-  IntColumn get durationSeconds => integer().nullable()(); // Active work time in seconds
+  IntColumn get durationSeconds =>
+      integer().nullable()(); // Active work time in seconds
   TextColumn get notes => text().nullable()(); // User notes like "felt easy"
 }
 
@@ -102,7 +109,8 @@ class SleepLogs extends Table {
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   IntColumn get deepSleepMinutes => integer().nullable()();
   IntColumn get remSleepMinutes => integer().nullable()();
-  IntColumn get recoveryScore => integer().nullable()(); // 0-100 calculated score
+  IntColumn get recoveryScore =>
+      integer().nullable()(); // 0-100 calculated score
 }
 
 /// DietChatMessages table - stores AI chat history for diet assistant
@@ -119,7 +127,8 @@ class CouncilMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get role => text()(); // "user" or specific AI model name
   TextColumn get content => text()();
-  TextColumn get room => text().withLength(min: 1, max: 20)(); // "fitness" or "nutrition"
+  TextColumn get room =>
+      text().withLength(min: 1, max: 20)(); // "fitness" or "nutrition"
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -133,10 +142,23 @@ class HomeChatMessages extends Table {
 }
 
 /// The main application database
-@DriftDatabase(tables: [Users, Workouts, Sessions, Exercises, SessionExercises, FoodLogs, SleepLogs, DietChatMessages, HomeChatMessages, CouncilMessages])
+@DriftDatabase(
+  tables: [
+    Users,
+    Workouts,
+    Sessions,
+    Exercises,
+    SessionExercises,
+    FoodLogs,
+    SleepLogs,
+    DietChatMessages,
+    HomeChatMessages,
+    CouncilMessages,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.openConnection());
-  
+
   @override
   int get schemaVersion => 20;
 
@@ -151,11 +173,11 @@ class AppDatabase extends _$AppDatabase {
           // Schema v2 changes:
           // 1. Add splitDays to users
           await m.addColumn(users, users.splitDays);
-          
+
           // 2. Add description and thumbnailUrl to workouts
           await m.addColumn(workouts, workouts.description);
           await m.addColumn(workouts, workouts.thumbnailUrl);
-          
+
           // 3. Create exercises table
           await m.createTable(exercises);
         }
@@ -195,7 +217,7 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(sessions, sessions.intensity);
         }
         if (from < 10) {
-          // Schema v10 changes: 
+          // Schema v10 changes:
           // Heart rate columns removal logic would go here if we were doing a negative migration,
           // but for now we just remove the addColumn calls to prevent new DBs from having them.
         }
@@ -206,7 +228,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 12) {
           // ignore: avoid_print
-          print('Migration v12 note: intentionally skipped addColumn for targetWeight to fix duplicate column error');
+          print(
+            'Migration v12 note: intentionally skipped addColumn for targetWeight to fix duplicate column error',
+          );
           // await m.addColumn(exercises, exercises.targetWeight);
         }
         if (from < 13) {
@@ -217,16 +241,20 @@ class AppDatabase extends _$AppDatabase {
         if (from < 14) {
           // Schema v14 changes:
           // Add caloriesBurned to sessions
-            // ignore: avoid_print
-            print('Migration v14 note: intentionally skipped addColumn for caloriesBurned to fix duplicate column error');
-            // await m.addColumn(sessions, sessions.caloriesBurned);
+          // ignore: avoid_print
+          print(
+            'Migration v14 note: intentionally skipped addColumn for caloriesBurned to fix duplicate column error',
+          );
+          // await m.addColumn(sessions, sessions.caloriesBurned);
         }
         if (from < 15) {
           // Schema v15 changes:
           // Add recoveryScore to sleepLogs
-            // ignore: avoid_print
-            print('Migration v15 note: intentionally skipped addColumn for recoveryScore to fix duplicate column error');
-            // await m.addColumn(sleepLogs, sleepLogs.recoveryScore);
+          // ignore: avoid_print
+          print(
+            'Migration v15 note: intentionally skipped addColumn for recoveryScore to fix duplicate column error',
+          );
+          // await m.addColumn(sleepLogs, sleepLogs.recoveryScore);
         }
         if (from < 18) {
           // Schema v18 changes:
@@ -246,51 +274,53 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
-  
+
   // ===== User Operations =====
-  
+
   /// Get the current user (there's only one)
   Future<User?> getUser() => (select(users)..limit(1)).getSingleOrNull();
 
   /// Watch the current user
   Stream<User?> watchUser() => (select(users)..limit(1)).watchSingleOrNull();
-  
+
   /// Create or update user
   Future<int> saveUser(UsersCompanion user) =>
       into(users).insertOnConflictUpdate(user);
-  
+
   /// Check if setup is complete
   Future<bool> isSetupComplete() async {
     final user = await getUser();
     if (user == null || user.splitDays == null) return false;
-    
+
     // Also check if they have created at least one workout
     final workouts = await getAllWorkouts();
     return workouts.isNotEmpty;
   }
-  
+
   // ===== Exercises Operations =====
-  
+
   /// Get exercises for a specific workout
   Future<List<Exercise>> getExercisesForWorkout(int workoutId) =>
-      (select(exercises)..where((e) => e.workoutId.equals(workoutId))
-                        ..orderBy([(e) => OrderingTerm.asc(e.orderIndex)]))
+      (select(exercises)
+            ..where((e) => e.workoutId.equals(workoutId))
+            ..orderBy([(e) => OrderingTerm.asc(e.orderIndex)]))
           .get();
-          
+
   /// Watch exercises for a workout
   Stream<List<Exercise>> watchExercisesForWorkout(int workoutId) =>
-      (select(exercises)..where((e) => e.workoutId.equals(workoutId))
-                        ..orderBy([(e) => OrderingTerm.asc(e.orderIndex)]))
+      (select(exercises)
+            ..where((e) => e.workoutId.equals(workoutId))
+            ..orderBy([(e) => OrderingTerm.asc(e.orderIndex)]))
           .watch();
-          
+
   /// Add an exercise
   Future<int> addExercise(ExercisesCompanion exercise) =>
       into(exercises).insert(exercise);
-      
+
   /// Update an exercise
   Future<bool> updateExercise(ExercisesCompanion exercise) =>
       update(exercises).replace(exercise);
-              
+
   /// Delete an exercise
   Future<int> deleteExercise(int id) =>
       (delete(exercises)..where((e) => e.id.equals(id))).go();
@@ -302,51 +332,65 @@ class AppDatabase extends _$AppDatabase {
   /// Get a single exercise by ID
   Future<Exercise?> getExercise(int id) =>
       (select(exercises)..where((e) => e.id.equals(id))).getSingleOrNull();
-  
+
   // ===== Workout Operations =====
-  
+
   /// Get all workouts ordered by cycle position
-  Future<List<Workout>> getAllWorkouts() =>
-      (select(workouts)..orderBy([(w) => OrderingTerm.asc(w.orderIndex)])).get();
-  
+  Future<List<Workout>> getAllWorkouts() => (select(
+    workouts,
+  )..orderBy([(w) => OrderingTerm.asc(w.orderIndex)])).get();
+
   /// Watch all workouts (for reactive updates)
-  Stream<List<Workout>> watchAllWorkouts() =>
-      (select(workouts)..orderBy([(w) => OrderingTerm.asc(w.orderIndex)])).watch();
-  
+  Stream<List<Workout>> watchAllWorkouts() => (select(
+    workouts,
+  )..orderBy([(w) => OrderingTerm.asc(w.orderIndex)])).watch();
+
   /// Add a new workout
   Future<int> addWorkout(WorkoutsCompanion workout) =>
       into(workouts).insert(workout);
-  
+
   /// Update workout order (for reordering)
   Future<void> updateWorkoutOrder(int id, int newIndex) =>
-      (update(workouts)..where((w) => w.id.equals(id)))
-          .write(WorkoutsCompanion(orderIndex: Value(newIndex)));
-          
+      (update(workouts)..where((w) => w.id.equals(id))).write(
+        WorkoutsCompanion(orderIndex: Value(newIndex)),
+      );
+
   /// Update workout details
   Future<bool> updateWorkout(WorkoutsCompanion workout) =>
       update(workouts).replace(workout);
-  
+
+  /// Normalize legacy rest-day thumbnails that used a removed asset path.
+  Future<int> normalizeLegacyRestDayThumbnails() {
+    return (update(workouts)..where(
+          (w) =>
+              w.isRestDay.equals(true) &
+              w.thumbnailUrl.equals('assets/images/rest_day.jpg'),
+        ))
+        .write(const WorkoutsCompanion(thumbnailUrl: Value(null)));
+  }
+
   /// Delete a workout
   Future<int> deleteWorkout(int id) =>
       (delete(workouts)..where((w) => w.id.equals(id))).go();
-      
+
   /// Get a single workout by ID
   Future<Workout?> getWorkout(int id) =>
       (select(workouts)..where((w) => w.id.equals(id))).getSingleOrNull();
 
-  
   // ===== Session Operations =====
-  
+
   /// Get sessions for a specific date
   Future<List<Session>> getSessionsForDate(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
-    return (select(sessions)
-          ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & 
-                        s.startedAt.isSmallerThanValue(end)))
+    return (select(sessions)..where(
+          (s) =>
+              s.startedAt.isBiggerOrEqualValue(start) &
+              s.startedAt.isSmallerThanValue(end),
+        ))
         .get();
   }
-  
+
   /// Get today's completed workouts
   Future<List<int>> getTodayCompletedWorkoutIds() async {
     final today = DateTime.now();
@@ -356,31 +400,36 @@ class AppDatabase extends _$AppDatabase {
         .map((s) => s.workoutId)
         .toList();
   }
-  
+
   /// Start a new session
-  Future<int> startSession(int workoutId) =>
-      into(sessions).insert(SessionsCompanion(
-        workoutId: Value(workoutId),
-        startedAt: Value(DateTime.now()),
-      ));
-      
+  Future<int> startSession(int workoutId) => into(sessions).insert(
+    SessionsCompanion(
+      workoutId: Value(workoutId),
+      startedAt: Value(DateTime.now()),
+    ),
+  );
+
   /// Get the currently active session (if any)
   Future<Session?> getActiveSession() =>
       (select(sessions)
-        ..where((s) => s.completedAt.isNull())
-        ..orderBy([(s) => OrderingTerm.desc(s.startedAt)])
-        ..limit(1))
-      .getSingleOrNull();
+            ..where((s) => s.completedAt.isNull())
+            ..orderBy([(s) => OrderingTerm.desc(s.startedAt)])
+            ..limit(1))
+          .getSingleOrNull();
 
-  
   /// Complete a session
-  Future<void> completeSession(int sessionId, int durationSeconds, {int? intensity}) async {
-    await (update(sessions)..where((s) => s.id.equals(sessionId)))
-        .write(SessionsCompanion(
-            completedAt: Value(DateTime.now()),
-            durationSeconds: Value(durationSeconds),
-            intensity: intensity != null ? Value(intensity) : const Value.absent(),
-          ));
+  Future<void> completeSession(
+    int sessionId,
+    int durationSeconds, {
+    int? intensity,
+  }) async {
+    await (update(sessions)..where((s) => s.id.equals(sessionId))).write(
+      SessionsCompanion(
+        completedAt: Value(DateTime.now()),
+        durationSeconds: Value(durationSeconds),
+        intensity: intensity != null ? Value(intensity) : const Value.absent(),
+      ),
+    );
   }
 
   /// Delete all active (incomplete) sessions
@@ -390,69 +439,95 @@ class AppDatabase extends _$AppDatabase {
     await (delete(sessions)..where((s) => s.completedAt.isNull())).go();
   }
 
-  
   // ===== Session Exercises Operations =====
-  
+
   /// Save exercise completion data for a session
   Future<int> saveSessionExercise(SessionExercisesCompanion data) =>
       into(sessionExercises).insert(data);
-  
+
   /// Get all exercise data for a specific session
-  Future<List<SessionExercise>> getSessionExercises(int sessionId) =>
-      (select(sessionExercises)..where((se) => se.sessionId.equals(sessionId))).get();
-  
+  Future<List<SessionExercise>> getSessionExercises(int sessionId) => (select(
+    sessionExercises,
+  )..where((se) => se.sessionId.equals(sessionId))).get();
+
   /// Get a single session exercise by ID
-  Future<SessionExercise?> getSessionExerciseById(int id) =>
-      (select(sessionExercises)..where((se) => se.id.equals(id))).getSingleOrNull();
-  
+  Future<SessionExercise?> getSessionExerciseById(int id) => (select(
+    sessionExercises,
+  )..where((se) => se.id.equals(id))).getSingleOrNull();
+
   /// Update exercise completion data
   Future<bool> updateSessionExercise(SessionExercisesCompanion data) =>
       update(sessionExercises).replace(data);
-  
+
   // ===== Progress Queries (Last 30 Days) =====
-  
+
   /// Get the last completed session for a specific workout
   Future<Session?> getLastSessionForWorkout(int workoutId) async {
     return (select(sessions)
-          ..where((s) => s.workoutId.equals(workoutId) & s.completedAt.isNotNull())
+          ..where(
+            (s) => s.workoutId.equals(workoutId) & s.completedAt.isNotNull(),
+          )
           ..orderBy([(s) => OrderingTerm.desc(s.completedAt)])
           ..limit(1))
         .getSingleOrNull();
   }
-  
+
   /// Get all sessions for a workout in the last N days
-  Future<List<Session>> getSessionsForWorkoutInDays(int workoutId, int days) async {
+  Future<List<Session>> getSessionsForWorkoutInDays(
+    int workoutId,
+    int days,
+  ) async {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
-    
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days));
+
     return (select(sessions)
-          ..where((s) => s.workoutId.equals(workoutId) & 
-                        s.completedAt.isNotNull() &
-                        s.startedAt.isBiggerOrEqualValue(start))
+          ..where(
+            (s) =>
+                s.workoutId.equals(workoutId) &
+                s.completedAt.isNotNull() &
+                s.startedAt.isBiggerOrEqualValue(start),
+          )
           ..orderBy([(s) => OrderingTerm.desc(s.startedAt)]))
         .get();
   }
-  
+
   /// Get average duration for a workout (from last N sessions)
-  Future<double> getAverageDurationForWorkout(int workoutId, {int limit = 5}) async {
-    final recentSessions = await (select(sessions)
-          ..where((s) => s.workoutId.equals(workoutId) & 
-                        s.completedAt.isNotNull() &
-                        s.durationSeconds.isNotNull())
-          ..orderBy([(s) => OrderingTerm.desc(s.completedAt)])
-          ..limit(limit))
-        .get();
-    
+  Future<double> getAverageDurationForWorkout(
+    int workoutId, {
+    int limit = 5,
+  }) async {
+    final recentSessions =
+        await (select(sessions)
+              ..where(
+                (s) =>
+                    s.workoutId.equals(workoutId) &
+                    s.completedAt.isNotNull() &
+                    s.durationSeconds.isNotNull(),
+              )
+              ..orderBy([(s) => OrderingTerm.desc(s.completedAt)])
+              ..limit(limit))
+            .get();
+
     if (recentSessions.isEmpty) return 0;
-    
-    final totalSeconds = recentSessions.fold<int>(0, (sum, s) => sum + (s.durationSeconds ?? 0));
+
+    final totalSeconds = recentSessions.fold<int>(
+      0,
+      (sum, s) => sum + (s.durationSeconds ?? 0),
+    );
     return totalSeconds / recentSessions.length;
   }
-  
+
   /// Get progress summary for a workout (for AI analysis)
-  Future<Map<String, dynamic>> getWorkoutProgressSummary(int workoutId, {int days = 30}) async {
+  Future<Map<String, dynamic>> getWorkoutProgressSummary(
+    int workoutId, {
+    int days = 30,
+  }) async {
     final recentSessions = await getSessionsForWorkoutInDays(workoutId, days);
-    
+
     if (recentSessions.isEmpty) {
       return {
         'sessionCount': 0,
@@ -462,16 +537,16 @@ class AppDatabase extends _$AppDatabase {
         'durations': <int>[],
       };
     }
-    
+
     final durations = recentSessions
         .where((s) => s.durationSeconds != null)
         .map((s) => s.durationSeconds!)
         .toList();
-    
-    final avgDuration = durations.isNotEmpty 
-        ? durations.reduce((a, b) => a + b) / durations.length 
+
+    final avgDuration = durations.isNotEmpty
+        ? durations.reduce((a, b) => a + b) / durations.length
         : 0.0;
-    
+
     return {
       'sessionCount': recentSessions.length,
       'averageDuration': avgDuration,
@@ -482,54 +557,62 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // ===== Home Chat Operations =====
-  
+
   /// Watch home chat history
-  Stream<List<HomeChatMessage>> watchHomeChatHistory() =>
-      (select(homeChatMessages)..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).watch();
-      
+  Stream<List<HomeChatMessage>> watchHomeChatHistory() => (select(
+    homeChatMessages,
+  )..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).watch();
+
   /// Add a message to home chat
   Future<int> addHomeChatMessage(HomeChatMessagesCompanion message) =>
       into(homeChatMessages).insert(message);
-      
+
   /// Update home chat message
   Future<bool> updateHomeChatMessage(HomeChatMessagesCompanion message) =>
       update(homeChatMessages).replace(message);
-      
+
   /// Clear home chat history
   Future<int> clearHomeChatHistory() => delete(homeChatMessages).go();
-  
 
   // ===== Council Chat Operations =====
-  
+
   /// Watch council chat history for a specific room
   Stream<List<CouncilMessage>> watchCouncilChatHistory(String room) =>
       (select(councilMessages)
-        ..where((t) => t.room.equals(room))
-        ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-      .watch();
-      
+            ..where((t) => t.room.equals(room))
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          .watch();
+
   /// Add a message to council chat
   Future<int> addCouncilMessage(CouncilMessagesCompanion message) =>
       into(councilMessages).insert(message);
-      
+
   /// Clear council chat history for a room
-  Future<int> clearCouncilChatHistory(String room) => 
+  Future<int> clearCouncilChatHistory(String room) =>
       (delete(councilMessages)..where((t) => t.room.equals(room))).go();
-  
 
   // ===== Progress/History Operations =====
-  
+
   /// Get activity for contribution grid (last N days)
   Future<Map<DateTime, String>> getActivityGrid(int days) async {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
-    
-    final result = await (select(sessions)
-          ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & 
-                        s.completedAt.isNotNull()))
-        .join([innerJoin(workouts, workouts.id.equalsExp(sessions.workoutId))])
-        .get();
-    
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days));
+
+    final result =
+        await (select(sessions)..where(
+              (s) =>
+                  s.startedAt.isBiggerOrEqualValue(start) &
+                  s.completedAt.isNotNull(),
+            ))
+            .join([
+              innerJoin(workouts, workouts.id.equalsExp(sessions.workoutId)),
+            ])
+            .get();
+
     final Map<DateTime, String> grid = {};
     for (final row in result) {
       final session = row.readTable(sessions);
@@ -544,15 +627,21 @@ class AppDatabase extends _$AppDatabase {
     }
     return grid;
   }
-  
+
   /// Watch activity for contribution grid (reactive)
   Stream<Map<DateTime, String>> watchActivityGrid(int days) {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
-    
-    return (select(sessions)
-          ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & 
-                        s.completedAt.isNotNull()))
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days));
+
+    return (select(sessions)..where(
+          (s) =>
+              s.startedAt.isBiggerOrEqualValue(start) &
+              s.completedAt.isNotNull(),
+        ))
         .join([innerJoin(workouts, workouts.id.equalsExp(sessions.workoutId))])
         .watch()
         .map((rows) {
@@ -570,36 +659,40 @@ class AppDatabase extends _$AppDatabase {
           return grid;
         });
   }
-  
+
   /// Get muscle workload for heatmap (last N days)
   /// Returns `Map<MuscleName, IntensityScore>` where score is approx sets/volume
   Future<Map<String, int>> getMuscleWorkload(int days) async {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
-    
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days));
+
     // Join Sessions -> SessionExercises -> Exercises
-    final query = select(sessionExercises)
-        .join([
-          innerJoin(sessions, sessions.id.equalsExp(sessionExercises.sessionId)),
-          innerJoin(exercises, exercises.id.equalsExp(sessionExercises.exerciseId)),
-        ])
-        ..where(sessions.startedAt.isBiggerOrEqualValue(start));
-        
+    final query = select(sessionExercises).join([
+      innerJoin(sessions, sessions.id.equalsExp(sessionExercises.sessionId)),
+      innerJoin(exercises, exercises.id.equalsExp(sessionExercises.exerciseId)),
+    ])..where(sessions.startedAt.isBiggerOrEqualValue(start));
+
     final result = await query.get();
-    
+
     final Map<String, int> workload = {};
-    
+
     for (final row in result) {
       final exercise = row.readTable(exercises);
       final sessionExercise = row.readTable(sessionExercises);
       final session = row.readTable(sessions); // Need session for timestamp
       final muscle = exercise.primaryMuscleGroup;
-      
+
       if (muscle != null && muscle.isNotEmpty) {
         // Time-Decay Algorithm
         // 1. Calculate hours elapsed
-        final hoursAgo = now.difference(session.completedAt ?? session.startedAt).inHours;
-        
+        final hoursAgo = now
+            .difference(session.completedAt ?? session.startedAt)
+            .inHours;
+
         // 2. Determine weight factor
         double decayFactor = 0.0;
         if (hoursAgo < 24) {
@@ -620,54 +713,69 @@ class AppDatabase extends _$AppDatabase {
         // 1 Set = 1 Point * Decay
         final sets = sessionExercise.completedSets;
         final fatiguePoints = sets * decayFactor;
-        
+
         // Use ceil to ensure even small volume registers as at least 1 if recent
         int points = fatiguePoints.ceil();
         workload[muscle] = (workload[muscle] ?? 0) + points;
       }
     }
-    
+
     return workload;
   }
 
   /// Get the last session where a specific muscle was the primary target
   /// Returns {date, volume, sets}
-  Future<Map<String, dynamic>?> getLastSessionForMuscle(List<String> muscleNames) async {
+  Future<Map<String, dynamic>?> getLastSessionForMuscle(
+    List<String> muscleNames,
+  ) async {
     // Join Sessions -> SessionExercises -> Exercises
-    final query = select(sessions)
-        .join([
-          innerJoin(sessionExercises, sessionExercises.sessionId.equalsExp(sessions.id)),
-          innerJoin(exercises, exercises.id.equalsExp(sessionExercises.exerciseId)),
-        ])
-        ..where(exercises.primaryMuscleGroup.isIn(muscleNames) & 
-                sessions.completedAt.isNotNull())
-        ..orderBy([OrderingTerm.desc(sessions.completedAt)])
-        ..limit(1);
+    final query =
+        select(sessions).join([
+            innerJoin(
+              sessionExercises,
+              sessionExercises.sessionId.equalsExp(sessions.id),
+            ),
+            innerJoin(
+              exercises,
+              exercises.id.equalsExp(sessionExercises.exerciseId),
+            ),
+          ])
+          ..where(
+            exercises.primaryMuscleGroup.isIn(muscleNames) &
+                sessions.completedAt.isNotNull(),
+          )
+          ..orderBy([OrderingTerm.desc(sessions.completedAt)])
+          ..limit(1);
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
 
     final session = row.readTable(sessions);
     // final se = row.readTable(sessionExercises); // Unused
-    
+
     // We need to aggregate stats for that session + muscle
     // One session might have multiple exercises for the same muscle
     // So getting just one row might be partial data.
     // Better approach: Get the session ID, then aggregate.
     final sessionId = session.id;
-    
+
     // Aggregate volume for this muscle in this session
-    final volumeQuery = select(sessionExercises)
-        .join([
-          innerJoin(exercises, exercises.id.equalsExp(sessionExercises.exerciseId)),
-        ])
-        ..where(sessionExercises.sessionId.equals(sessionId) & exercises.primaryMuscleGroup.isIn(muscleNames));
-        
+    final volumeQuery =
+        select(sessionExercises).join([
+          innerJoin(
+            exercises,
+            exercises.id.equalsExp(sessionExercises.exerciseId),
+          ),
+        ])..where(
+          sessionExercises.sessionId.equals(sessionId) &
+              exercises.primaryMuscleGroup.isIn(muscleNames),
+        );
+
     final results = await volumeQuery.get();
-    
+
     double totalVolume = 0;
     int totalSets = 0;
-    
+
     final user = await getUser();
     final userWeight = user?.weightKg ?? 70.0;
 
@@ -687,69 +795,85 @@ class AppDatabase extends _$AppDatabase {
       'sets': totalSets,
     };
   }
-  
+
   /// Get volume load for a specific period
   /// Returns total volume (kg * reps * sets)
   Future<double> getVolumeLoad(int days, {int offsetDays = 0}) async {
     final now = DateTime.now();
     // End date is today minus offset
-    final end = DateTime(now.year, now.month, now.day).subtract(Duration(days: offsetDays));
+    final end = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: offsetDays));
     final effectiveEnd = end.add(const Duration(days: 1)); // inclusive end day
-    
+
     // Start date is end minus duration
     final start = end.subtract(Duration(days: days));
-    
+
     // Join Sessions -> SessionExercises
-    final query = select(sessionExercises)
-        .join([
-          innerJoin(sessions, sessions.id.equalsExp(sessionExercises.sessionId)),
-        ])
-        ..where(sessions.startedAt.isBiggerOrEqualValue(start) & 
-                sessions.startedAt.isSmallerThanValue(effectiveEnd));
-                
+    final query =
+        select(sessionExercises).join([
+          innerJoin(
+            sessions,
+            sessions.id.equalsExp(sessionExercises.sessionId),
+          ),
+        ])..where(
+          sessions.startedAt.isBiggerOrEqualValue(start) &
+              sessions.startedAt.isSmallerThanValue(effectiveEnd),
+        );
+
     final result = await query.get();
-    
+
     // Need user weight for bodyweight calc
     final user = await getUser();
     final userWeight = user?.weightKg ?? 70.0;
-    
+
     double totalVolume = 0;
-    
+
     for (final row in result) {
       final se = row.readTable(sessionExercises);
-      
+
       totalVolume += VolumeCalculator.calculateVolume(
         weightKg: se.weightKg,
         reps: se.completedReps,
         bodyWeightKg: userWeight,
       );
     }
-    
+
     return totalVolume;
   }
 
   /// Get total reps for a specific period
   Future<int> getTotalReps(int days, {int offsetDays = 0}) async {
     final now = DateTime.now();
-    final end = DateTime(now.year, now.month, now.day).subtract(Duration(days: offsetDays));
-    final effectiveEnd = end.add(const Duration(days: 1)); 
+    final end = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: offsetDays));
+    final effectiveEnd = end.add(const Duration(days: 1));
     final start = end.subtract(Duration(days: days));
-    
-    final query = select(sessionExercises)
-        .join([
-          innerJoin(sessions, sessions.id.equalsExp(sessionExercises.sessionId)),
-        ])
-        ..where(sessions.startedAt.isBiggerOrEqualValue(start) & 
-                sessions.startedAt.isSmallerThanValue(effectiveEnd));
-                
+
+    final query =
+        select(sessionExercises).join([
+          innerJoin(
+            sessions,
+            sessions.id.equalsExp(sessionExercises.sessionId),
+          ),
+        ])..where(
+          sessions.startedAt.isBiggerOrEqualValue(start) &
+              sessions.startedAt.isSmallerThanValue(effectiveEnd),
+        );
+
     final result = await query.get();
-    
+
     int totalReps = 0;
     for (final row in result) {
       final se = row.readTable(sessionExercises);
       totalReps += se.completedReps;
     }
-    
+
     return totalReps;
   }
 
@@ -757,12 +881,16 @@ class AppDatabase extends _$AppDatabase {
   Future<Map<String, dynamic>> getAnalyticsSummary(int days) async {
     final now = DateTime.now();
     final start = now.subtract(Duration(days: days));
-    
+
     // 1. Fetch Sessions
-    final sessionRows = await (select(sessions)
-      ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & s.completedAt.isNotNull()))
-      .get();
-      
+    final sessionRows =
+        await (select(sessions)..where(
+              (s) =>
+                  s.startedAt.isBiggerOrEqualValue(start) &
+                  s.completedAt.isNotNull(),
+            ))
+            .get();
+
     if (sessionRows.isEmpty) {
       return {
         'avgIntensity': 0.0,
@@ -780,24 +908,24 @@ class AppDatabase extends _$AppDatabase {
     // Check if we have granular set durations (Time Under Tension)
     // If we do, we prefer that over session duration for "Active Time"
     // But getAnalyticsSummary iterates Sessions, not SessionExercises directly here.
-    // Let's keep it simple for now: Use session duration but note that we *could* switch to 
+    // Let's keep it simple for now: Use session duration but note that we *could* switch to
     // an aggregate of session_exercises duration.
     //
     // Actually, user requested "find how much time i worked this week" based on the new clock.
     // So we SHOULD calculate based on SessionExercises.durationSeconds if possible.
-    
+
     // Fetch all session exercises for these sessions
     final sessionIds = sessionRows.map((s) => s.id).toList();
-    final allExercises = await (select(sessionExercises)
-      ..where((se) => se.sessionId.isIn(sessionIds)))
-      .get();
-      
+    final allExercises = await (select(
+      sessionExercises,
+    )..where((se) => se.sessionId.isIn(sessionIds))).get();
+
     // Calculate total duration from sets
     int totalSetDuration = 0;
     for (final se in allExercises) {
       totalSetDuration += se.durationSeconds ?? 0;
     }
-    
+
     // Use the variable to suppress warning or remove if not needed yet.
     // Since we aren't using it yet in the return, let's just use it in a debug print or comment it out?
     // User wants "find how much time i worked", so arguably we SHOULD use it in the calculation?
@@ -805,10 +933,10 @@ class AppDatabase extends _$AppDatabase {
     // If totalSetDuration > 0, use it? No, that's dangerous if mixed session types.
     // Let's just suppress warning by using it in a tautology or logging.
     // Or better: Return it in the map!
-    
+
     // Returning 'activeTimeSeconds' in map
 
-    // Ideally we might want to show BOTH or a ratio. 
+    // Ideally we might want to show BOTH or a ratio.
     // For now, let's use the granular time if it's significant (> 0), else session time
     // But since this is a new feature, old history won't have it.
     // Hybrid approach: Sum(Session.duration) is "Gym Time". Sum(Set.duration) is "Work Time".
@@ -816,18 +944,18 @@ class AppDatabase extends _$AppDatabase {
     // OR switch to Work Time? User said: "calucate this daily / progress ... to find how much time i worked"
     // Let's use Session Duration for now to avoid dropping to 0 for all history.
     // TODO: Expose granular "Time Under Tension" as a separate metric later?
-    // 
+    //
     // Wait, the request is explicit: "additional clock to mointor duration of each set... to find how much time i worked"
     // So we should try to use the set duration.
-    
+
     // Let's calculate BOTH.
     // But for the return map, 'totalMinutes' is used by AnalyticsCard.
     // Let's use Session Duration for backward compatibility for now,
-    // but maybe we can mix them? 
+    // but maybe we can mix them?
     // Actually, if we just start tracking sets now, the "Active Time" will be 0 for past weeks.
     // Let's Stick to Session Duration for "Time" on the card, but maybe add "Active Time" as a metric?
     // The user's prompt implies replacing or refining the time metric.
-    
+
     for (final s in sessionRows) {
       if (s.intensity != null) {
         totalIntensity += s.intensity!;
@@ -836,14 +964,16 @@ class AppDatabase extends _$AppDatabase {
       totalSeconds += s.durationSeconds ?? 0;
     }
 
-    final avgIntensity = intensityCount > 0 ? (totalIntensity / intensityCount) : 0.0;
+    final avgIntensity = intensityCount > 0
+        ? (totalIntensity / intensityCount)
+        : 0.0;
     final totalMinutes = totalSeconds ~/ 60;
-    
+
     // Calorie Calculation Logic
     // Get user weight for MET calculation
     final user = await getUser();
     final userWeightKg = user?.weightKg ?? 70.0;
-    
+
     int calories = 0;
     for (final s in sessionRows) {
       calories += CalorieCalculator.estimateSessionCalories(
@@ -853,18 +983,17 @@ class AppDatabase extends _$AppDatabase {
         intensity: s.intensity,
       );
     }
-    
+
     // We can return the granular active time here if needed for future use
     // For now, let's just log it or ignore the warning by using it
     // ignore: unused_local_variable
-    final _ = totalSetDuration; 
+    final _ = totalSetDuration;
 
     // 2. Fetch Muscle Distribution
     final muscleQuery = select(sessionExercises).join([
       innerJoin(sessions, sessions.id.equalsExp(sessionExercises.sessionId)),
       innerJoin(exercises, exercises.id.equalsExp(sessionExercises.exerciseId)),
-    ])
-    ..where(sessions.startedAt.isBiggerOrEqualValue(start));
+    ])..where(sessions.startedAt.isBiggerOrEqualValue(start));
 
     final muscleResult = await muscleQuery.get();
     final muscleStats = <String, double>{};
@@ -874,9 +1003,9 @@ class AppDatabase extends _$AppDatabase {
       final se = row.readTable(sessionExercises);
       final ex = row.readTable(exercises);
       final muscle = ex.primaryMuscleGroup ?? 'Other';
-      
+
       // We use "Sets" as a proxy for focus (better than reps which skews to abs/calves)
-      final volume = se.completedSets.toDouble(); 
+      final volume = se.completedSets.toDouble();
       muscleStats[muscle] = (muscleStats[muscle] ?? 0) + volume;
       totalMuscleVolume += volume;
     }
@@ -885,9 +1014,14 @@ class AppDatabase extends _$AppDatabase {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     // Convert to percentages
-    final musclePercentages = muscleFocus.map((e) => 
-      MapEntry(e.key, totalMuscleVolume > 0 ? (e.value / totalMuscleVolume) : 0.0)
-    ).toList();
+    final musclePercentages = muscleFocus
+        .map(
+          (e) => MapEntry(
+            e.key,
+            totalMuscleVolume > 0 ? (e.value / totalMuscleVolume) : 0.0,
+          ),
+        )
+        .toList();
 
     // 3. Count workouts in the last 3 days for Recovery Score
     final threeDaysAgo = now.subtract(const Duration(days: 3));
@@ -907,191 +1041,208 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // ===== Cycle Logic =====
-  
+
   /// Get the current user's split index
   Future<int> getCurrentSplitIndex() async {
     final user = await getUser();
     return user?.currentSplitIndex ?? 0;
   }
-  
+
   /// Get the workout for the current split day
   Future<Workout?> getNextWorkout() async {
     final allWorkouts = await getAllWorkouts();
     if (allWorkouts.isEmpty) return null;
-    
+
     final currentIndex = await getCurrentSplitIndex();
-    
+
     // Find workout matching current split index
     for (final workout in allWorkouts) {
       if (workout.orderIndex == currentIndex) {
         return workout;
       }
     }
-    
+
     // Fallback to first workout if index is out of range
     return allWorkouts.first;
   }
-  
+
   /// Get the workout for tomorrow's split day (for widget preview)
   Future<Workout?> getTomorrowWorkout() async {
     final allWorkouts = await getAllWorkouts();
     if (allWorkouts.isEmpty) return null;
-    
+
     final user = await getUser();
     final currentIndex = user?.currentSplitIndex ?? 0;
     final splitDays = user?.splitDays ?? allWorkouts.length;
-    
+
     // Calculate tomorrow's index (wrap around if at end of cycle)
     final tomorrowIndex = (currentIndex + 1) % splitDays;
-    
+
     // Find workout matching tomorrow's split index
     for (final workout in allWorkouts) {
       if (workout.orderIndex == tomorrowIndex) {
         return workout;
       }
     }
-    
+
     // Fallback to first workout if index is out of range
     return allWorkouts.first;
   }
-  
+
   /// Count completed sessions for a specific workout orderIndex (current split day)
   Future<int> getCompletedCountForSplitDay(int splitIndex) async {
     final allWorkouts = await getAllWorkouts();
-    
+
     // Find workout IDs that match this split index
     final matchingWorkoutIds = allWorkouts
         .where((w) => w.orderIndex == splitIndex)
         .map((w) => w.id)
         .toList();
-    
+
     if (matchingWorkoutIds.isEmpty) return 0;
-    
+
     // Count all completed sessions for these workouts
-    final result = await (select(sessions)
-          ..where((s) => s.workoutId.isIn(matchingWorkoutIds) & 
-                        s.completedAt.isNotNull()))
-        .get();
-    
+    final result =
+        await (select(sessions)..where(
+              (s) =>
+                  s.workoutId.isIn(matchingWorkoutIds) &
+                  s.completedAt.isNotNull(),
+            ))
+            .get();
+
     return result.length;
   }
-  
+
   /// Advance to next split day if all workouts for current cycle day are completed today
   Future<bool> checkAndAdvanceSplit() async {
     final user = await getUser();
     if (user == null) return false;
-    
+
     final currentIndex = user.currentSplitIndex;
     final splitDays = user.splitDays ?? 7;
-    
+
     // Get workouts for this split index
-    final dayWorkouts = await (select(workouts)..where((w) => w.orderIndex.equals(currentIndex))).get();
-    
+    final dayWorkouts = await (select(
+      workouts,
+    )..where((w) => w.orderIndex.equals(currentIndex))).get();
+
     if (dayWorkouts.isEmpty) {
       // If no workouts defined for this day, we can't 'complete' them.
       return false;
     }
-    
+
     // Get today's completed workout IDs
     final completedIds = await getTodayCompletedWorkoutIds();
-    
+
     // Check if ALL workouts for this split day are in completedIds
     // This allows for identifying if the user has finished the day's requirements
     final allCompleted = dayWorkouts.every((w) => completedIds.contains(w.id));
-    
+
     if (allCompleted) {
       final nextIndex = (currentIndex + 1) % splitDays;
-      await (update(users)..where((u) => u.id.equals(user.id)))
-          .write(UsersCompanion(currentSplitIndex: Value(nextIndex)));
+      await (update(users)..where((u) => u.id.equals(user.id))).write(
+        UsersCompanion(currentSplitIndex: Value(nextIndex)),
+      );
       return true;
     }
-    
+
     return false;
   }
-  
+
   /// Update the user's current split index manually
   Future<void> setSplitIndex(int index) async {
     final user = await getUser();
     if (user == null) return;
-    
-    await (update(users)..where((u) => u.id.equals(user.id)))
-        .write(UsersCompanion(currentSplitIndex: Value(index)));
+
+    await (update(users)..where((u) => u.id.equals(user.id))).write(
+      UsersCompanion(currentSplitIndex: Value(index)),
+    );
   }
-  
+
   // ===== Stats & Insights =====
-  
+
   /// Get stats for the last 7 days (including today)
   /// Returns { 'duration': totalSeconds, 'calories': totalKcal, 'workouts': count }
   Future<Map<String, int>> getWeeklyStats() async {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
-    
+    final start = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(const Duration(days: 6));
+
     // Get sessions from last 7 days that are completed
-    final recentSessions = await (select(sessions)
-          ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & 
-                        s.completedAt.isNotNull()))
-        .get();
-        
+    final recentSessions =
+        await (select(sessions)..where(
+              (s) =>
+                  s.startedAt.isBiggerOrEqualValue(start) &
+                  s.completedAt.isNotNull(),
+            ))
+            .get();
+
     int totalDuration = 0;
     int workoutCount = recentSessions.length;
-    
+
     // Get user weight for calorie calc
     final user = await getUser();
     final weight = user?.weightKg ?? 70.0; // Fallback to 70kg
     const double met = 4.5; // Moderate effort
-    
+
     for (final session in recentSessions) {
       totalDuration += session.durationSeconds ?? 0;
     }
-    
+
     // Calorie formula: MET * Weight(kg) * Duration(hr)
     final durationHours = totalDuration / 3600.0;
     final totalCalories = (met * weight * durationHours).round();
-    
+
     return {
       'duration': totalDuration,
       'calories': totalCalories,
       'workouts': workoutCount,
     };
   }
-  
+
   /// Get weekly insight comparing this week (last 7 days) vs previous week
   Future<String> getWeeklyInsight() async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     // This week: [Today-6, Today]
     final thisWeekStart = today.subtract(const Duration(days: 6));
-    
+
     // Last week: [Today-13, Today-7]
     final lastWeekStart = today.subtract(const Duration(days: 13));
     final lastWeekEnd = today.subtract(const Duration(days: 7));
-    
+
     // Helper to count sessions in range
     Future<int> countSessions(DateTime start, DateTime end) async {
-       // inclusive start, inclusive end (conceptually)
-       // drift queries usually need careful bounds. 
-       // strict comparison: start <= date < end+1day
-       final effectiveEnd = end.add(const Duration(days: 1));
-       
-       final result = await (select(sessions)
-          ..where((s) => s.startedAt.isBiggerOrEqualValue(start) & 
-                        s.startedAt.isSmallerThanValue(effectiveEnd) &
-                        s.completedAt.isNotNull()))
-        .get();
-        return result.length;
+      // inclusive start, inclusive end (conceptually)
+      // drift queries usually need careful bounds.
+      // strict comparison: start <= date < end+1day
+      final effectiveEnd = end.add(const Duration(days: 1));
+
+      final result =
+          await (select(sessions)..where(
+                (s) =>
+                    s.startedAt.isBiggerOrEqualValue(start) &
+                    s.startedAt.isSmallerThanValue(effectiveEnd) &
+                    s.completedAt.isNotNull(),
+              ))
+              .get();
+      return result.length;
     }
-    
+
     final thisWeekCount = await countSessions(thisWeekStart, today);
     final lastWeekCount = await countSessions(lastWeekStart, lastWeekEnd);
-    
+
     if (thisWeekCount == 0) {
       if (lastWeekCount > 0) {
         return "You've been quiet this week. Time to get back to it!";
       }
       return "Start your first workout to build momentum!";
     }
-    
+
     if (thisWeekCount > lastWeekCount) {
       final diff = thisWeekCount - lastWeekCount;
       return "You're crushing it! $diff more workouts than last week. Keep building that momentum.";
@@ -1101,34 +1252,37 @@ class AppDatabase extends _$AppDatabase {
       return "You're active, but a little behind last week's pace. Push for one more!";
     }
   }
-  
+
   // ===== Session History =====
-  
+
   /// Get recent completed sessions with workout details
   /// Returns list of maps with session + workout info for history display
-  Future<List<Map<String, dynamic>>> getRecentSessionsWithDetails({int limit = 20}) async {
-    final completedSessions = await (select(sessions)
-          ..where((s) => s.completedAt.isNotNull())
-          ..orderBy([(s) => OrderingTerm.desc(s.completedAt)])
-          ..limit(limit))
-        .get();
-    
+  Future<List<Map<String, dynamic>>> getRecentSessionsWithDetails({
+    int limit = 20,
+  }) async {
+    final completedSessions =
+        await (select(sessions)
+              ..where((s) => s.completedAt.isNotNull())
+              ..orderBy([(s) => OrderingTerm.desc(s.completedAt)])
+              ..limit(limit))
+            .get();
+
     final results = <Map<String, dynamic>>[];
-    
+
     for (final session in completedSessions) {
       // Get workout details
-      final workout = await (select(workouts)
-            ..where((w) => w.id.equals(session.workoutId)))
-          .getSingleOrNull();
-      
+      final workout = await (select(
+        workouts,
+      )..where((w) => w.id.equals(session.workoutId))).getSingleOrNull();
+
       // Get exercise count for this session
       final sessionExercisesList = await getSessionExercises(session.id);
-      
+
       final user = await getUser();
       final bodyWeight = user?.weightKg ?? 70.0;
       double totalVolume = 0;
       int totalReps = 0;
-      
+
       for (final se in sessionExercisesList) {
         totalVolume += VolumeCalculator.calculateVolume(
           weightKg: se.weightKg,
@@ -1137,7 +1291,7 @@ class AppDatabase extends _$AppDatabase {
         );
         totalReps += se.completedReps;
       }
-      
+
       results.add({
         'session': session,
         'workout': workout,
@@ -1146,26 +1300,31 @@ class AppDatabase extends _$AppDatabase {
         'completedAt': session.completedAt,
         'durationSeconds': session.durationSeconds ?? 0,
         'exerciseCount': sessionExercisesList.length,
-        'completedSets': sessionExercisesList.fold<int>(0, (sum, ex) => sum + ex.completedSets),
+        'completedSets': sessionExercisesList.fold<int>(
+          0,
+          (sum, ex) => sum + ex.completedSets,
+        ),
         'totalVolume': totalVolume,
         'totalReps': totalReps,
       });
     }
-    
+
     return results;
   }
-  
+
   /// Get detailed exercise data for a specific session
-  Future<List<Map<String, dynamic>>> getSessionExerciseDetails(int sessionId) async {
+  Future<List<Map<String, dynamic>>> getSessionExerciseDetails(
+    int sessionId,
+  ) async {
     final sessionExercisesList = await getSessionExercises(sessionId);
     final results = <Map<String, dynamic>>[];
-    
+
     for (final se in sessionExercisesList) {
       // Get original exercise definition
-      final exercise = await (select(exercises)
-            ..where((e) => e.id.equals(se.exerciseId)))
-          .getSingleOrNull();
-      
+      final exercise = await (select(
+        exercises,
+      )..where((e) => e.id.equals(se.exerciseId))).getSingleOrNull();
+
       results.add({
         'exerciseName': exercise?.name ?? 'Unknown',
         'targetSets': exercise?.sets ?? 0,
@@ -1174,57 +1333,63 @@ class AppDatabase extends _$AppDatabase {
         'actualReps': se.completedReps,
       });
     }
-    
+
     return results;
   }
   // ===== Diet / Food Log Operations =====
-  
+
   /// Add a food log entry
   Future<int> addFoodLog(FoodLogsCompanion entry) =>
       into(foodLogs).insert(entry);
-      
+
   /// Delete a food log entry
   Future<int> deleteFoodLog(int id) =>
       (delete(foodLogs)..where((f) => f.id.equals(id))).go();
-      
+
   /// Get food logs for a specific date (Watch/Stream)
   Stream<List<FoodLog>> watchFoodLogsForDate(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
     return (select(foodLogs)
-          ..where((f) => f.date.isBiggerOrEqualValue(start) & 
-                        f.date.isSmallerThanValue(end))
+          ..where(
+            (f) =>
+                f.date.isBiggerOrEqualValue(start) &
+                f.date.isSmallerThanValue(end),
+          )
           ..orderBy([(f) => OrderingTerm.desc(f.date)]))
         .watch();
   }
-  
+
   /// Get food logs for a specific date
   Future<List<FoodLog>> getFoodLogsForDate(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
     return (select(foodLogs)
-          ..where((f) => f.date.isBiggerOrEqualValue(start) & 
-                        f.date.isSmallerThanValue(end))
+          ..where(
+            (f) =>
+                f.date.isBiggerOrEqualValue(start) &
+                f.date.isSmallerThanValue(end),
+          )
           ..orderBy([(f) => OrderingTerm.desc(f.date)]))
         .get();
   }
-  
+
   /// Get daily nutrition summary
   Future<Map<String, double>> getDailyNutritionSummary(DateTime date) async {
     final logs = await getFoodLogsForDate(date);
-    
+
     double calories = 0;
     double protein = 0;
     double carbs = 0;
     double fats = 0;
-    
+
     for (final log in logs) {
       calories += log.calories;
       protein += log.protein;
       carbs += log.carbs;
       fats += log.fats;
     }
-    
+
     return {
       'calories': calories,
       'protein': protein,
@@ -1238,13 +1403,15 @@ class AppDatabase extends _$AppDatabase {
   /// Add or update a sleep log entry
   Future<int> addSleepLog(SleepLogsCompanion entry) async {
     // Check if entry exists for this date
-    final existing = await (select(sleepLogs)
-      ..where((t) => t.date.equals(entry.date.value))
-    ).getSingleOrNull();
+    final existing = await (select(
+      sleepLogs,
+    )..where((t) => t.date.equals(entry.date.value))).getSingleOrNull();
 
     if (existing != null) {
       // Update existing
-      return (update(sleepLogs)..where((t) => t.id.equals(existing.id))).write(entry);
+      return (update(
+        sleepLogs,
+      )..where((t) => t.id.equals(existing.id))).write(entry);
     } else {
       // Insert new
       return into(sleepLogs).insert(entry);
@@ -1272,18 +1439,22 @@ class AppDatabase extends _$AppDatabase {
   /// Get sleep log for a specific date
   Future<SleepLog?> getSleepLogForDate(DateTime date) {
     final day = DateTime(date.year, date.month, date.day);
-    return (select(sleepLogs)..where((s) => s.date.equals(day))).getSingleOrNull();
+    return (select(
+      sleepLogs,
+    )..where((s) => s.date.equals(day))).getSingleOrNull();
   }
 
   // ===== Diet Chat Operations =====
 
   /// Get the diet chat history
-  Future<List<DietChatMessage>> getDietChatHistory() =>
-      (select(dietChatMessages)..orderBy([(d) => OrderingTerm.asc(d.createdAt)])).get();
+  Future<List<DietChatMessage>> getDietChatHistory() => (select(
+    dietChatMessages,
+  )..orderBy([(d) => OrderingTerm.asc(d.createdAt)])).get();
 
   /// Watch the diet chat history
-  Stream<List<DietChatMessage>> watchDietChatHistory() =>
-      (select(dietChatMessages)..orderBy([(d) => OrderingTerm.asc(d.createdAt)])).watch();
+  Stream<List<DietChatMessage>> watchDietChatHistory() => (select(
+    dietChatMessages,
+  )..orderBy([(d) => OrderingTerm.asc(d.createdAt)])).watch();
 
   /// Add a message to the diet chat history
   Future<int> addDietChatMessage(DietChatMessagesCompanion entry) =>
@@ -1303,13 +1474,15 @@ class AppDatabase extends _$AppDatabase {
 
   /// Get all-time sessions, volume, reps, and sets
   Future<Map<String, dynamic>> getAllTimeStats() async {
-    final completedSessions = await (select(sessions)..where((s) => s.completedAt.isNotNull())).get();
+    final completedSessions = await (select(
+      sessions,
+    )..where((s) => s.completedAt.isNotNull())).get();
     final allSessionEx = await (select(sessionExercises)).get();
-    
+
     double totalVolume = 0;
     int totalReps = 0;
     int totalSets = 0;
-    
+
     // Get user weight for all-time stats fallback
     final user = await getUser();
     final userWeight = user?.weightKg ?? 70.0;
@@ -1323,7 +1496,7 @@ class AppDatabase extends _$AppDatabase {
       totalReps += se.completedReps;
       totalSets += se.completedSets;
     }
-    
+
     return {
       'sessions': completedSessions.length,
       'volume': totalVolume,
@@ -1335,15 +1508,21 @@ class AppDatabase extends _$AppDatabase {
   /// Get volume trend for last N days
   Future<List<Map<String, dynamic>>> getVolumeTrend(int days) async {
     final start = DateTime.now().subtract(Duration(days: days));
-    
-    final query = select(sessions).join([
-      innerJoin(sessionExercises, sessionExercises.sessionId.equalsExp(sessions.id)),
-    ])
-    ..where(sessions.startedAt.isBiggerOrEqualValue(start) & sessions.completedAt.isNotNull());
-    
+
+    final query =
+        select(sessions).join([
+          innerJoin(
+            sessionExercises,
+            sessionExercises.sessionId.equalsExp(sessions.id),
+          ),
+        ])..where(
+          sessions.startedAt.isBiggerOrEqualValue(start) &
+              sessions.completedAt.isNotNull(),
+        );
+
     final result = await query.get();
     final volumeByDay = <DateTime, double>{};
-    
+
     // Get user weight for trend fallback
     final user = await getUser();
     final userWeight = user?.weightKg ?? 70.0;
@@ -1351,8 +1530,12 @@ class AppDatabase extends _$AppDatabase {
     for (final row in result) {
       final session = row.readTable(sessions);
       final se = row.readTable(sessionExercises);
-      
-      final date = DateTime(session.startedAt.year, session.startedAt.month, session.startedAt.day);
+
+      final date = DateTime(
+        session.startedAt.year,
+        session.startedAt.month,
+        session.startedAt.day,
+      );
       final volume = VolumeCalculator.calculateVolume(
         weightKg: se.weightKg,
         reps: se.completedReps,
@@ -1360,17 +1543,24 @@ class AppDatabase extends _$AppDatabase {
       );
       volumeByDay[date] = (volumeByDay[date] ?? 0) + volume;
     }
-    
-    final trend = volumeByDay.entries.map((e) => {'date': e.key, 'volume': e.value}).toList();
-    trend.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+
+    final trend = volumeByDay.entries
+        .map((e) => {'date': e.key, 'volume': e.value})
+        .toList();
+    trend.sort(
+      (a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime),
+    );
     return trend;
   }
 
   /// Get hours since last food log
   Future<int?> getHoursSinceLastFoodLog() async {
-    final lastLog = await (select(foodLogs)..orderBy([(f) => OrderingTerm.desc(f.date)])..limit(1)).getSingleOrNull();
+    final lastLog =
+        await (select(foodLogs)
+              ..orderBy([(f) => OrderingTerm.desc(f.date)])
+              ..limit(1))
+            .getSingleOrNull();
     if (lastLog == null) return null;
     return DateTime.now().difference(lastLog.date).inHours;
   }
 }
-

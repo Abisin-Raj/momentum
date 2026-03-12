@@ -14,6 +14,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 /// Screen to create a workout as part of a split
 /// Flow: Name -> Thumbnail -> Exercises -> Clock
+enum _CreateWorkoutStep { name, thumbnail, exercises, clock }
+
 class CreateWorkoutScreen extends ConsumerStatefulWidget {
   final int index; // 1-based index
   final int totalDays;
@@ -100,6 +102,51 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     }
   }
 
+  List<_CreateWorkoutStep> get _stepOrder => [
+    _CreateWorkoutStep.name,
+    if (!_isRestDay) ...[
+      _CreateWorkoutStep.thumbnail,
+      _CreateWorkoutStep.exercises,
+      _CreateWorkoutStep.clock,
+    ],
+  ];
+
+  _CreateWorkoutStep get _currentStepType {
+    final steps = _stepOrder;
+    final safeIndex = _currentStep >= steps.length
+        ? steps.length - 1
+        : _currentStep;
+    return steps[safeIndex];
+  }
+
+  Widget _buildStep(_CreateWorkoutStep step) {
+    switch (step) {
+      case _CreateWorkoutStep.name:
+        return _buildNameStep();
+      case _CreateWorkoutStep.thumbnail:
+        return _buildThumbnailStep();
+      case _CreateWorkoutStep.exercises:
+        return _buildExercisesStep();
+      case _CreateWorkoutStep.clock:
+        return _buildClockStep();
+    }
+  }
+
+  void _setRestDay(bool value) {
+    if (_isRestDay == value) return;
+
+    setState(() {
+      _isRestDay = value;
+      if (value && _currentStep > 0) {
+        _currentStep = 0;
+      }
+    });
+
+    if (value && _pageController.hasClients) {
+      _pageController.jumpToPage(0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -113,14 +160,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
       );
     }
 
-    final steps = [
-      _buildNameStep(),
-      if (!_isRestDay) ...[
-        _buildThumbnailStep(),
-        _buildExercisesStep(),
-        _buildClockStep(),
-      ],
-    ];
+    final steps = _stepOrder.map(_buildStep).toList(growable: false);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -232,28 +272,21 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   }
 
   bool _canProceed() {
-    if (_isRestDay) {
-      return _nameController.text.trim().isNotEmpty &&
-          _nameController.text.length <= 50;
-    }
-
-    switch (_currentStep) {
-      case 0:
+    switch (_currentStepType) {
+      case _CreateWorkoutStep.name:
         return _nameController.text.trim().isNotEmpty &&
             _nameController.text.length <= 50;
-      case 1:
+      case _CreateWorkoutStep.thumbnail:
         return true; // Thumbnail is optional (Skip button handles null)
-      case 2:
+      case _CreateWorkoutStep.exercises:
         return _exercises.isNotEmpty;
-      case 3:
+      case _CreateWorkoutStep.clock:
         return true; // Clock selection is always valid
-      default:
-        return false;
     }
   }
 
   void _nextStep() async {
-    final stepsCount = _isRestDay ? 1 : 4;
+    final stepsCount = _stepOrder.length;
 
     if (_currentStep < stepsCount - 1) {
       _pageController.nextPage(
@@ -566,7 +599,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   Widget _buildTypeToggle(String label, bool value, ColorScheme colorScheme) {
     final isSelected = _isRestDay == value;
     return GestureDetector(
-      onTap: () => setState(() => _isRestDay = value),
+      onTap: () => _setRestDay(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(

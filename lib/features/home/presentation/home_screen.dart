@@ -15,12 +15,8 @@ import '../../workout/presentation/calendar_screen.dart';
 import 'gym_team_screen.dart';
 import '../../home/presentation/widgets/nutrition_card.dart';
 import '../../../core/providers/dashboard_providers.dart';
-import '../../../core/services/widget_service.dart';
-
 
 import '../../../core/providers/smart_suggestion_provider.dart';
-
-
 
 import 'package:momentum/core/utils/screen_utils.dart';
 import '../../../core/utils/image_utils.dart';
@@ -31,16 +27,15 @@ class _HomeScreenConstants {
   static const double sectionSpacing = 32.0;
   static const double cardSpacing = 16.0;
   static const double titleSpacerHeight = 100.0;
-  
+
   // Card dimensions
   static const double minCardHeight = 350.0;
   static const double maxCardHeight = 550.0;
   static const double cardHeightRatio = 0.55;
-  
+
   // Typography
   static const double titleFontSize = 40.0;
 
-  
   // Greeting time boundaries (24-hour format)
   static const int morningEnd = 12;
   static const int afternoonEnd = 18;
@@ -58,7 +53,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Track failed image loads for fallback rendering
   bool _imageLoadFailed = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -70,7 +65,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
   }
-
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -86,33 +80,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeSession = ref.watch(activeWorkoutSessionProvider);
     final suggestionsAsync = ref.watch(smartSuggestionsProvider);
     final progressionAsync = ref.watch(workoutProgressionProvider);
-    
-    // Explicitly watch widget sync provider to keep it alive and reactive
-    ref.watch(widgetSyncProvider);
-    
+
     final userName = switch (userAsync) {
       AsyncData(:final value) => value?.name ?? 'Athlete',
       _ => 'Athlete',
     };
-    
+
     // Resume Banner Logic: Only show if active session matches today's workout
-    final todayWorkout = progressionAsync.valueOrNull?.todayWorkouts.firstOrNull;
-    final shouldShowResume = activeSession != null && 
-                             todayWorkout != null && 
-                             activeSession.workoutId == todayWorkout.id;
-    
+    final todayWorkout =
+        progressionAsync.valueOrNull?.todayWorkouts.firstOrNull;
+    final shouldShowResume =
+        activeSession != null &&
+        todayWorkout != null &&
+        activeSession.workoutId == todayWorkout.id;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), // Extra bottom padding for BottomBar
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            100,
+          ), // Extra bottom padding for BottomBar
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header with greeting and notification bell
               _buildHeader(context, userName),
-              
+
               const SizedBox(height: _HomeScreenConstants.sectionSpacing),
-              
+
               // Resume Banner (Conditional)
               if (shouldShowResume) ...[
                 _buildResumeBanner(context, activeSession),
@@ -122,18 +120,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Main workout content
               progressionAsync.when(
                 data: (progression) => _buildWorkoutContent(
-                  context, 
-                  ref, 
-                  progression.todayWorkouts.isNotEmpty ? progression.todayWorkouts.first : null, 
-                  activeSession, 
+                  context,
+                  ref,
+                  progression.todayWorkouts.isNotEmpty
+                      ? progression.todayWorkouts.first
+                      : null,
+                  activeSession,
                   progression.isCompletedToday,
                 ),
                 error: (e, _) => _buildErrorState(context, e.toString()),
                 loading: () => const Center(child: CircularProgressIndicator()),
               ),
-              
+
               const SizedBox(height: _HomeScreenConstants.cardSpacing),
-              
+
               // Smart Suggestions (Deload / Adaptive)
               _buildSuggestions(suggestionsAsync),
 
@@ -143,34 +143,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const AIInsightsCard(),
 
               const SizedBox(height: _HomeScreenConstants.cardSpacing),
-              
+
               // Nutrition / Net Calories Card
               const NutritionCard(),
 
-
               const SizedBox(height: _HomeScreenConstants.sectionSpacing),
-              
+
               // === DASHBOARD 2.0 ===
               _buildSectionHeader(context, "ANALYTICS"),
               const SizedBox(height: _HomeScreenConstants.cardSpacing),
-              
+
               // Unified Momentum Analytics
               const AnalyticsCard(),
               const SizedBox(height: _HomeScreenConstants.cardSpacing),
-              
+
               const SleepCard(),
               const SizedBox(height: _HomeScreenConstants.cardSpacing),
-              
+
               // Consistency Grid
               _buildConsistencyGrid(ref),
             ],
           ),
         ),
       ),
-
     );
   }
-  
+
   Widget _buildSuggestions(AsyncValue<List<SmartSuggestion>> suggestionsAsync) {
     return suggestionsAsync.when(
       data: (suggestions) {
@@ -186,102 +184,118 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSuggestionCard(SmartSuggestion suggestion) {
-     final isDeload = suggestion.type == SuggestionType.deload;
-     final theme = Theme.of(context);
-     final colorScheme = theme.colorScheme;
-     
-     return Container(
-       margin: const EdgeInsets.only(bottom: 16),
-       padding: const EdgeInsets.all(16),
-       decoration: BoxDecoration(
-         color: isDeload ? colorScheme.tertiaryContainer : colorScheme.secondaryContainer,
-         borderRadius: BorderRadius.circular(16),
-       ),
-       child: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-           Row(
-             children: [
-               Icon(
-                 isDeload ? Icons.spa : Icons.insights,
-                 size: 20,
-                 color: isDeload ? colorScheme.onTertiaryContainer : colorScheme.onSecondaryContainer
-               ),
-               const SizedBox(width: 8),
-               Text(
-                 suggestion.title,
-                 style: TextStyle(
-                   fontWeight: FontWeight.bold,
-                   color: isDeload ? colorScheme.onTertiaryContainer : colorScheme.onSecondaryContainer,
-                 ),
-               ),
-             ],
-           ),
-           const SizedBox(height: 8),
-           Text(
-             suggestion.message,
-             style: TextStyle(
-               color: isDeload ? colorScheme.onTertiaryContainer : colorScheme.onSecondaryContainer,
-               height: 1.4,
-             ),
-           ),
-           if (suggestion.actionLabel != null) ...[
-             const SizedBox(height: 12),
-             Align(
-               alignment: Alignment.centerRight,
-               child: FilledButton.tonal(
-                  onPressed: () {
-                    // Logic based on suggestion type
-                    if (isDeload) {
-                      // Deload suggestion - show encouragement message
+    final isDeload = suggestion.type == SuggestionType.deload;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDeload
+            ? colorScheme.tertiaryContainer
+            : colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isDeload ? Icons.spa : Icons.insights,
+                size: 20,
+                color: isDeload
+                    ? colorScheme.onTertiaryContainer
+                    : colorScheme.onSecondaryContainer,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                suggestion.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isDeload
+                      ? colorScheme.onTertiaryContainer
+                      : colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            suggestion.message,
+            style: TextStyle(
+              color: isDeload
+                  ? colorScheme.onTertiaryContainer
+                  : colorScheme.onSecondaryContainer,
+              height: 1.4,
+            ),
+          ),
+          if (suggestion.actionLabel != null) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonal(
+                onPressed: () {
+                  // Logic based on suggestion type
+                  if (isDeload) {
+                    // Deload suggestion - show encouragement message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Take it easy today! Listen to your body.',
+                        ),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
+                  } else if (suggestion.type == SuggestionType.adaptive) {
+                    // Validate payload before using
+                    if (suggestion.payload is! Workout) {
+                      debugPrint(
+                        'Invalid payload for adaptive suggestion: ${suggestion.payload}',
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Take it easy today! Listen to your body.'),
-                          duration: Duration(seconds: 3),
+                          content: Text('Unable to start suggested workout'),
                         ),
                       );
-                    } else if (suggestion.type == SuggestionType.adaptive) {
-                      // Validate payload before using
-                      if (suggestion.payload is! Workout) {
-                        debugPrint('Invalid payload for adaptive suggestion: ${suggestion.payload}');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Unable to start suggested workout')),
+                      return;
+                    }
+
+                    final workout = suggestion.payload as Workout;
+                    ref
+                        .read(activeWorkoutSessionProvider.notifier)
+                        .startWorkout(workout);
+
+                    if (mounted) {
+                      final session = ref.read(activeWorkoutSessionProvider);
+                      if (session != null) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ActiveWorkoutScreen(session: session),
+                          ),
                         );
-                        return;
-                      }
-                      
-                      final workout = suggestion.payload as Workout;
-                      ref.read(activeWorkoutSessionProvider.notifier).startWorkout(workout);
-                      
-                      if (mounted) {
-                        final session = ref.read(activeWorkoutSessionProvider);
-                        if (session != null) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ActiveWorkoutScreen(session: session),
-                            ),
-                          );
-                        }
                       }
                     }
-                  },
-                 style: FilledButton.styleFrom(
-                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                 ),
-                 child: Text(suggestion.actionLabel!),
-               ),
-             ),
-           ],
-         ],
-       ),
-     );
+                  }
+                },
+                style: FilledButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(suggestion.actionLabel!),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildResumeBanner(BuildContext context, ActiveSession session) {
-
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -302,7 +316,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: colorScheme.onErrorContainer),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: colorScheme.onErrorContainer,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Workout Interrupted',
@@ -341,14 +358,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-                   // Cancel
-                   // Note: This effectively discards the session or we could prompt to save partial.
-                   // For now simple discard/completion.
-                   ref.read(activeWorkoutSessionProvider.notifier).cancelWorkout();
+                  // Cancel
+                  // Note: This effectively discards the session or we could prompt to save partial.
+                  // For now simple discard/completion.
+                  ref
+                      .read(activeWorkoutSessionProvider.notifier)
+                      .cancelWorkout();
                 },
                 style: OutlinedButton.styleFrom(
-                   foregroundColor: colorScheme.error,
-                   side: BorderSide(color: colorScheme.error),
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error),
                 ),
                 child: const Text('Discard'),
               ),
@@ -358,9 +377,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-  
-  Widget _buildHeader(BuildContext context, String userName) {
 
+  Widget _buildHeader(BuildContext context, String userName) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Row(
@@ -402,7 +420,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: colorScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.calendar_month, color: colorScheme.onSurfaceVariant),
+                child: Icon(
+                  Icons.calendar_month,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             IconButton(
@@ -417,7 +438,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: colorScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -425,192 +449,233 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
-  
-  Widget _buildWorkoutContent(BuildContext context, WidgetRef ref, Workout? workout, ActiveSession? activeSession, bool isCompletedToday) {
+
+  Widget _buildWorkoutContent(
+    BuildContext context,
+    WidgetRef ref,
+    Workout? workout,
+    ActiveSession? activeSession,
+    bool isCompletedToday,
+  ) {
     if (workout == null) {
-      final hasWorkouts = ref.watch(workoutsStreamProvider).valueOrNull?.isNotEmpty ?? false;
+      final hasWorkouts =
+          ref.watch(workoutsStreamProvider).valueOrNull?.isNotEmpty ?? false;
       if (hasWorkouts) {
         return _buildRestDayState(context);
       }
       return _buildEmptyState(context);
     }
-    
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     // Determine image provider
     final imageProvider = ImageUtils.resolveImageProvider(workout.thumbnailUrl);
-    
+
     return LayoutBuilder(
       builder: (context, _) {
         // Calculate responsive minHeight based on screen
         final screenHeight = MediaQuery.of(context).size.height;
-        final responsiveMinHeight = (screenHeight * _HomeScreenConstants.cardHeightRatio)
-            .clamp(_HomeScreenConstants.minCardHeight, _HomeScreenConstants.maxCardHeight);
-        
-    return Container(
-      width: double.infinity,
-      constraints: BoxConstraints(minHeight: responsiveMinHeight),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(32),
-        image: !_imageLoadFailed && imageProvider != null ? DecorationImage(
-          image: imageProvider,
-          fit: BoxFit.cover,
-          onError: (exception, stackTrace) {
-            // Handle image load errors with fallback
-            if (mounted) {
-              setState(() => _imageLoadFailed = true);
-            }
-            debugPrint('Image load error: $exception');
-          },
-          colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: 0.2), // Slight dark tint globally
-            BlendMode.darken,
-          ),
-        ) : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Fallback gradient when no image or image failed to load
-          if (_imageLoadFailed || imageProvider == null)
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colorScheme.primary.withValues(alpha: 0.1),
-                      colorScheme.secondary.withValues(alpha: 0.1),
-                      colorScheme.tertiary.withValues(alpha: 0.15),
-                    ],
-                  ),
-                ),
+        final responsiveMinHeight =
+            (screenHeight * _HomeScreenConstants.cardHeightRatio).clamp(
+              _HomeScreenConstants.minCardHeight,
+              _HomeScreenConstants.maxCardHeight,
+            );
+
+        return Container(
+          width: double.infinity,
+          constraints: BoxConstraints(minHeight: responsiveMinHeight),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(32),
+            image: !_imageLoadFailed && imageProvider != null
+                ? DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    onError: (exception, stackTrace) {
+                      // Handle image load errors with fallback
+                      if (mounted) {
+                        setState(() => _imageLoadFailed = true);
+                      }
+                      debugPrint('Image load error: $exception');
+                    },
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withValues(
+                        alpha: 0.2,
+                      ), // Slight dark tint globally
+                      BlendMode.darken,
+                    ),
+                  )
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-            ),
-          
-          // Gradient Overlay for text readability (when image is present)
-          if (!_imageLoadFailed && imageProvider != null)
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.5), // Darker at top for header visibility
-                      Colors.black.withValues(alpha: 0.3), // Mid section slightly lighter
-                      Colors.black.withValues(alpha: 0.7), // Darker toward bottom
-                      Colors.black.withValues(alpha: 0.95), // Very dark at bottom for text
-                    ],
-                    stops: const [0.0, 0.3, 0.6, 1.0],
-                  ),
-                ),
-              ),
-            ),
-            
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Row with completion status or "Today's Focus"
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isCompletedToday 
-                            ? Colors.green.withValues(alpha: 0.8)
-                            : Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isCompletedToday 
-                              ? Colors.green.withValues(alpha: 0.9)
-                              : colorScheme.primary.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isCompletedToday ? Icons.check_circle : Icons.bolt,
-                            size: 16,
-                            color: isCompletedToday ? Colors.white : colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            isCompletedToday ? "COMPLETED TODAY" : "TODAY'S FOCUS",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isCompletedToday ? Colors.white : colorScheme.primary,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Fallback gradient when no image or image failed to load
+              if (_imageLoadFailed || imageProvider == null)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colorScheme.primary.withValues(alpha: 0.1),
+                          colorScheme.secondary.withValues(alpha: 0.1),
+                          colorScheme.tertiary.withValues(alpha: 0.15),
                         ],
                       ),
                     ),
-                    
-                    // Optional: Add more badges here (e.g. Duration)
-                  ],
+                  ),
                 ),
-                
-                // Flexible space instead of unbounded Spacer
-                const SizedBox(height: _HomeScreenConstants.titleSpacerHeight),
-                
-                // Workout Title
-                _buildImmersiveTitle(workout.name),
-                
-                const SizedBox(height: 8),
-                
-                // Description / Type
-                Row(
-                  children: [
-                    Icon(
-                      _getWorkoutIcon(workout.clockType),
-                      color: colorScheme.onSurfaceVariant,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _getWorkoutDescription(workout),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
+
+              // Gradient Overlay for text readability (when image is present)
+              if (!_imageLoadFailed && imageProvider != null)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(
+                            alpha: 0.5,
+                          ), // Darker at top for header visibility
+                          Colors.black.withValues(
+                            alpha: 0.3,
+                          ), // Mid section slightly lighter
+                          Colors.black.withValues(
+                            alpha: 0.7,
+                          ), // Darker toward bottom
+                          Colors.black.withValues(
+                            alpha: 0.95,
+                          ), // Very dark at bottom for text
+                        ],
+                        stops: const [0.0, 0.3, 0.6, 1.0],
                       ),
                     ),
+                  ),
+                ),
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Row with completion status or "Today's Focus"
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isCompletedToday
+                                ? Colors.green.withValues(alpha: 0.8)
+                                : Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isCompletedToday
+                                  ? Colors.green.withValues(alpha: 0.9)
+                                  : colorScheme.primary.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isCompletedToday
+                                    ? Icons.check_circle
+                                    : Icons.bolt,
+                                size: 16,
+                                color: isCompletedToday
+                                    ? Colors.white
+                                    : colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isCompletedToday
+                                    ? "COMPLETED TODAY"
+                                    : "TODAY'S FOCUS",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: isCompletedToday
+                                      ? Colors.white
+                                      : colorScheme.primary,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Optional: Add more badges here (e.g. Duration)
+                      ],
+                    ),
+
+                    // Flexible space instead of unbounded Spacer
+                    const SizedBox(
+                      height: _HomeScreenConstants.titleSpacerHeight,
+                    ),
+
+                    // Workout Title
+                    _buildImmersiveTitle(workout.name),
+
+                    const SizedBox(height: 8),
+
+                    // Description / Type
+                    Row(
+                      children: [
+                        Icon(
+                          _getWorkoutIcon(workout.clockType),
+                          color: colorScheme.onSurfaceVariant,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getWorkoutDescription(workout),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Progress Insight (Semi-transparent to blend)
+                    _buildProgressInsight(context, ref, workout),
+
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    _buildActionButtons(
+                      context,
+                      ref,
+                      workout,
+                      activeSession,
+                      isCompletedToday,
+                    ),
                   ],
                 ),
-                
-                const SizedBox(height: 24),
-                
-                // Progress Insight (Semi-transparent to blend)
-                _buildProgressInsight(context, ref, workout),
-                
-                const SizedBox(height: 24),
-                
-                // Action Buttons
-                _buildActionButtons(context, ref, workout, activeSession, isCompletedToday),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
       },
     );
   }
@@ -625,22 +690,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         height: 1.0,
         letterSpacing: -1.0,
         shadows: [
-          Shadow(
-            offset: Offset(0, 2),
-            blurRadius: 4,
-            color: Colors.black54,
-          ),
+          Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black54),
         ],
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
   }
-  
-  Widget _buildActionButtons(BuildContext context, WidgetRef ref, Workout workout, ActiveSession? activeSession, bool isCompletedToday) {
+
+  Widget _buildActionButtons(
+    BuildContext context,
+    WidgetRef ref,
+    Workout workout,
+    ActiveSession? activeSession,
+    bool isCompletedToday,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     if (activeSession != null && activeSession.workoutId == workout.id) {
       return Column(
         children: [
@@ -652,7 +719,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 if (currentSession != null && context.mounted) {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ActiveWorkoutScreen(session: currentSession),
+                      builder: (_) =>
+                          ActiveWorkoutScreen(session: currentSession),
                     ),
                   );
                 }
@@ -669,7 +737,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Text(
+                  Text(
                     'RESUME SESSION',
                     style: TextStyle(
                       fontSize: 16,
@@ -688,29 +756,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: double.infinity,
             child: TextButton(
               onPressed: () async {
-                 final confirm = await showDialog<bool>(
-                   context: context,
-                   builder: (context) => AlertDialog(
-                     backgroundColor: colorScheme.surfaceContainer,
-                     title: Text('Stop Workout?', style: TextStyle(color: colorScheme.onSurface)),
-                     content: Text('This will finish the current session.', style: TextStyle(color: colorScheme.onSurfaceVariant)),
-                     actions: [
-                       TextButton(
-                         onPressed: () => Navigator.pop(context, false),
-                         child: const Text('Cancel'),
-                       ),
-                       FilledButton(
-                         style: FilledButton.styleFrom(backgroundColor: colorScheme.error),
-                         onPressed: () => Navigator.pop(context, true),
-                         child: const Text('Stop'),
-                       ),
-                     ],
-                   ),
-                 );
-                 
-                 if (confirm == true) {
-                   await ref.read(activeWorkoutSessionProvider.notifier).completeWorkout();
-                 }
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: colorScheme.surfaceContainer,
+                    title: Text(
+                      'Stop Workout?',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                    content: Text(
+                      'This will finish the current session.',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colorScheme.error,
+                        ),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Stop'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  await ref
+                      .read(activeWorkoutSessionProvider.notifier)
+                      .completeWorkout();
+                }
               },
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.error,
@@ -758,7 +836,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Start State
       return SizedBox(
         width: double.infinity,
-          child: FilledButton(
+        child: FilledButton(
           onPressed: () => _onStartPressed(context, ref, workout),
           style: FilledButton.styleFrom(
             backgroundColor: colorScheme.primary,
@@ -794,21 +872,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final clockDesc = switch (workout.clockType) {
       ClockType.none => 'Freestyle',
       ClockType.stopwatch => 'Tracked with Stopwatch',
-      ClockType.timer => workout.timerDurationSeconds != null
-          ? '${workout.timerDurationSeconds! ~/ 60} min Timer'
-          : 'Timer Workout',
+      ClockType.timer =>
+        workout.timerDurationSeconds != null
+            ? '${workout.timerDurationSeconds! ~/ 60} min Timer'
+            : 'Timer Workout',
       ClockType.alarm => 'Alarm Completion',
     };
     return clockDesc;
   }
-  
-  Widget _buildProgressInsight(BuildContext context, WidgetRef ref, Workout workout) {
+
+  Widget _buildProgressInsight(
+    BuildContext context,
+    WidgetRef ref,
+    Workout workout,
+  ) {
     final insightAsync = ref.watch(workoutInsightProvider(workout.id));
-    
+
     // Use valueOrNull to persist data during refreshes/loading states
     // This prevents the UI from collapsing (flickering) when the provider updates
     final data = insightAsync.valueOrNull;
-    
+
     // If no data yet (initial load), show nothing
     if (data == null) return const SizedBox.shrink();
 
@@ -816,7 +899,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (data['offline'] == true) {
       return const SizedBox.shrink();
     }
-    
+
     // First session case
     if (data['firstSession'] == true) {
       return _buildInsightCard(
@@ -826,29 +909,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         subtitle: "Let's set your baseline!",
       );
     }
-    
+
     // Normal case with data
     final sessionCount = data['sessionCount'] as int;
     final lastDuration = data['lastDuration'] as int?;
     final avgDuration = data['averageDuration'] as double;
     final aiInsight = data['aiInsight'] as String?;
-    
+
     final lastMinutes = lastDuration != null ? (lastDuration / 60).round() : 0;
     final avgMinutes = (avgDuration / 60).round();
-    
+
     final insight = aiInsight ?? '$sessionCount sessions • avg $avgMinutes min';
-    
+
     // Calculate percentage difference
-    final percentDiff = avgMinutes > 0 
-        ? ((lastMinutes - avgMinutes) / avgMinutes * 100).abs() 
+    final percentDiff = avgMinutes > 0
+        ? ((lastMinutes - avgMinutes) / avgMinutes * 100).abs()
         : 0.0;
-    
+
     // Consider it a trend only if > 10% difference
     final isSignificantChange = percentDiff > 10;
-    
+
     IconData trendIcon;
     bool? isPositiveTrend;
-    
+
     if (!isSignificantChange) {
       trendIcon = Icons.trending_flat; // Consistent
       isPositiveTrend = null; // Neutral color
@@ -857,9 +940,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isPositiveTrend = true; // Green (Good efficiency)
     } else {
       trendIcon = Icons.fitness_center; // Slower/Longer
-      isPositiveTrend = true; // Also Green? (More volume?) - Let's keep it neutral for now
+      isPositiveTrend =
+          true; // Also Green? (More volume?) - Let's keep it neutral for now
     }
-    
+
     return _buildInsightCard(
       context: context,
       icon: trendIcon,
@@ -868,7 +952,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       trend: isSignificantChange ? isPositiveTrend : null,
     );
   }
-  
+
   Widget _buildInsightCard({
     required BuildContext context,
     required IconData icon,
@@ -890,14 +974,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: trend == true 
+              color: trend == true
                   ? colorScheme.primary.withValues(alpha: 0.15)
                   : colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: trend == true ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              color: trend == true
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
               size: 24,
             ),
           ),
@@ -931,26 +1017,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-  
+
   Widget _buildRestDayState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: _HomeScreenConstants.minCardHeight),
+      constraints: const BoxConstraints(
+        minHeight: _HomeScreenConstants.minCardHeight,
+      ),
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.snooze,
-            size: 64,
-            color: colorScheme.primary,
-          ),
+          Icon(Icons.snooze, size: 64, color: colorScheme.primary),
           const SizedBox(height: 24),
           Text(
             'REST DAY',
@@ -996,10 +1082,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         Text(
           'Create your training split to start\nbuilding momentum',
-          style: TextStyle(
-            fontSize: 14,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
@@ -1019,16 +1102,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
-  
+
   Widget _buildErrorState(BuildContext context, String error) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(
-          Icons.error_outline,
-          size: 64,
-          color: colorScheme.error,
-        ),
+        Icon(Icons.error_outline, size: 64, color: colorScheme.error),
         const SizedBox(height: 16),
         Text(
           'Something went wrong',
@@ -1041,28 +1120,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 8),
         Text(
           error,
-          style: TextStyle(
-            fontSize: 14,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
-  
-  void _onStartPressed(BuildContext context, WidgetRef ref, Workout? defaultWorkout) async {
+
+  void _onStartPressed(
+    BuildContext context,
+    WidgetRef ref,
+    Workout? defaultWorkout,
+  ) async {
     // Safety check
     if (defaultWorkout == null) return;
-    
+
     // Default behavior: Start the scheduled workout immediately
     // User requested to skip the selection list and just show today's items
     _startSession(context, ref, defaultWorkout);
   }
-  
-  void _startSession(BuildContext context, WidgetRef ref, Workout workout) async {
+
+  void _startSession(
+    BuildContext context,
+    WidgetRef ref,
+    Workout workout,
+  ) async {
     await ref.read(activeWorkoutSessionProvider.notifier).startWorkout(workout);
-    
+
     if (context.mounted) {
       final session = ref.read(activeWorkoutSessionProvider);
       if (session != null) {
@@ -1074,7 +1158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     }
   }
-  
+
   // NOTE: _showWorkoutSelectionDialog was removed (dead code)
 
   IconData _getWorkoutIcon(ClockType type) {
@@ -1085,7 +1169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ClockType.alarm => Icons.alarm,
     };
   }
-  
+
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4.0),
@@ -1101,15 +1185,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-
-
   Widget _buildConsistencyGrid(WidgetRef ref) {
     final gridAsync = ref.watch(activityGridProvider(200));
     final data = gridAsync.valueOrNull;
-    
+
     // If no data yet, show nothing
     if (data == null) return const SizedBox.shrink();
-     
+
     return ConsistencyGridWidget(activityData: data);
   }
 }
