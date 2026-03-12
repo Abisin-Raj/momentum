@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:momentum/core/providers/ai_providers.dart';
 import 'package:momentum/core/services/settings_service.dart';
-import 'package:momentum/core/database/app_database.dart';
-import 'package:momentum/core/providers/database_providers.dart';
-import 'package:drift/drift.dart' as drift;
 
 class GymTeamScreen extends ConsumerStatefulWidget {
   const GymTeamScreen({super.key});
@@ -63,7 +59,6 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
