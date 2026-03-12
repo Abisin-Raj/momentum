@@ -16,6 +16,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
   final _pexelsController = TextEditingController();
   final _unsplashController = TextEditingController();
   final _geminiController = TextEditingController();
+  final _openaiController = TextEditingController();
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isFetchingModels = false;
@@ -33,6 +34,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     final pexels = await service.getPexelsKey();
     final unsplash = await service.getUnsplashKey();
     final gemini = await service.getGeminiKey();
+    final openai = await service.getOpenAIKey();
     final model = await service.getGeminiModel();
     final source = await service.getImageSource();
 
@@ -40,10 +42,12 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
       final newPexels = pexels ?? '';
       final newUnsplash = unsplash ?? '';
       final newGemini = gemini ?? '';
+      final newOpenAI = openai ?? '';
 
       final changed = _pexelsController.text != newPexels ||
           _unsplashController.text != newUnsplash ||
           _geminiController.text != newGemini ||
+          _openaiController.text != newOpenAI ||
           _selectedGeminiModel != model ||
           _selectedImageSource != source ||
           _isLoading;
@@ -53,6 +57,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
           _pexelsController.text = newPexels;
           _unsplashController.text = newUnsplash;
           _geminiController.text = newGemini;
+          _openaiController.text = newOpenAI;
           _selectedGeminiModel = model;
           _selectedImageSource = source;
           _isLoading = false;
@@ -66,6 +71,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     _pexelsController.dispose();
     _unsplashController.dispose();
     _geminiController.dispose();
+    _openaiController.dispose();
     super.dispose();
   }
 
@@ -75,6 +81,7 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
     await service.setPexelsKey(_pexelsController.text.trim());
     await service.setUnsplashKey(_unsplashController.text.trim());
     await service.setGeminiKey(_geminiController.text.trim());
+    await service.setOpenAIKey(_openaiController.text.trim());
     await service.setImageSource(_selectedImageSource);
     
     // Invalidate providers
@@ -209,6 +216,14 @@ class _APISettingsScreenState extends ConsumerState<APISettingsScreen> {
                      label: 'Google Gemini API Key',
                      hint: 'Enables AI Workout Insights',
                      icon: Icons.auto_awesome,
+                   ),
+                   const SizedBox(height: 16),
+                   _buildTextField(
+                     context,
+                     controller: _openaiController,
+                     label: "OpenAI API Key",
+                     hint: "Enables ChatGPT Gym Team Chat",
+                     icon: Icons.chat_bubble_outline,
                    ),
                    const SizedBox(height: 8),
                    Align(

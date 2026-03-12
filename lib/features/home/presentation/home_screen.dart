@@ -12,6 +12,7 @@ import '../../home/presentation/widgets/consistency_grid_widget.dart';
 import '../../home/presentation/widgets/analytics_card.dart';
 import '../../home/presentation/widgets/sleep_card.dart';
 import '../../workout/presentation/calendar_screen.dart';
+import 'gym_team_screen.dart';
 import '../../home/presentation/widgets/nutrition_card.dart';
 import '../../../core/providers/dashboard_providers.dart';
 import '../../../core/services/widget_service.dart';
@@ -386,20 +387,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         ),
-        IconButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CalendarScreen()),
-            );
-          },
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
+        Row(
+          children: [
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                );
+              },
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.calendar_month, color: colorScheme.onSurfaceVariant),
+              ),
             ),
-            child: Icon(Icons.calendar_month, color: colorScheme.onSurfaceVariant),
-          ),
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const GymTeamScreen()),
+                );
+              },
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.chat_bubble_outline, color: colorScheme.onSurfaceVariant),
+              ),
+            ),
+          ],
         ),
       ],
     );
