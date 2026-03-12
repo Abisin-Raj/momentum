@@ -37,15 +37,15 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
 
     try {
       final geminiKey = await ref.read(settingsServiceProvider).getGeminiKey();
-      final openaiKey = await ref.read(settingsServiceProvider).getOpenAIKey();
+      final gemini2Key = await ref.read(settingsServiceProvider).getGemini2Key();
 
       // Simulate group chat responses
       if (geminiKey != null && geminiKey.isNotEmpty) {
-        // Build Gemini response logic here or call a service
+        // Build Gemini Alpha response logic here
       }
       
-      if (openaiKey != null && openaiKey.isNotEmpty) {
-        // Build OpenAI response logic here
+      if (gemini2Key != null && gemini2Key.isNotEmpty) {
+        // Build Gemini Beta response logic here
       }
 
     } catch (e) {
@@ -65,7 +65,7 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
         title: const Column(
           children: [
             Text('GYM TEAM', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            Text('Gemini & ChatGPT', style: TextStyle(fontSize: 10, letterSpacing: 1.2)),
+            Text('Dual Gemini Agents', style: TextStyle(fontSize: 10, letterSpacing: 1.2)),
           ],
         ),
         centerTitle: true,
@@ -77,19 +77,19 @@ class _GymTeamScreenState extends ConsumerState<GymTeamScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 _buildSystemMessage(
-                  'Welcome to the Gym Team! Your AI experts are ready to help you reach your goals.',
+                  'Welcome to the Gym Team! Your dual Gemini experts are ready to help you reach your goals.',
                 ),
                 _buildChatMessage(
-                  role: 'Gemini',
+                  role: 'Gemini Alpha',
                   message: 'Hey Athlete! I specialize in data analysis and form. How was your workout today?',
                   isAi: true,
                   color: Colors.blueAccent,
                 ),
                 _buildChatMessage(
-                  role: 'ChatGPT',
+                  role: 'Gemini Beta',
                   message: 'I can help with nutrition planning and motivation. Let’s get started!',
                   isAi: true,
-                  color: Colors.greenAccent,
+                  color: Colors.cyanAccent,
                 ),
               ],
             ),
