@@ -410,8 +410,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                          GestureDetector(
                            onTap: () async {
                              final url = Uri.parse('https://github.com/Abisin-Raj');
-                             if (await canLaunchUrl(url)) {
+                             try {
+                               // On some Androids canLaunchUrl returns false but launchUrl works
                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                             } catch (e) {
+                               try {
+                                 await launchUrl(url, mode: LaunchMode.platformDefault);
+                               } catch (e2) {
+                                 if (context.mounted) {
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                     const SnackBar(content: Text('Could not open link')),
+                                   );
+                                 }
+                               }
                              }
                            },
                            child: Text(
