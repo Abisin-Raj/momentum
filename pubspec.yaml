@@ -22,6 +22,7 @@ dependencies:
   
   # Routing
   go_router: ^14.2.0
+  url_launcher: ^6.3.0
   
   # UI & Theme
   dynamic_color: ^1.7.0
