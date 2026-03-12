@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
@@ -394,6 +395,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                      loading: () => const SizedBox(height: 56, child: Center(child: CircularProgressIndicator())),
                      error: (_, __) => const SizedBox.shrink(),
                    ),
+
+                   const SizedBox(height: 48),
+                   Center(
+                     child: Column(
+                       children: [
+                         Text(
+                           'developed by',
+                           style: theme.textTheme.bodySmall?.copyWith(
+                             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                           ),
+                         ),
+                         const SizedBox(height: 4),
+                         GestureDetector(
+                           onTap: () async {
+                             final url = Uri.parse('https://github.com/Abisin-Raj');
+                             if (await canLaunchUrl(url)) {
+                               await launchUrl(url, mode: LaunchMode.externalApplication);
+                             }
+                           },
+                           child: Text(
+                             'Abisin Raj',
+                             style: theme.textTheme.titleMedium?.copyWith(
+                               color: colorScheme.primary,
+                               fontWeight: FontWeight.bold,
+                               decoration: TextDecoration.underline,
+                               decorationColor: colorScheme.primary.withValues(alpha: 0.5),
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                   const SizedBox(height: 24),
                 ],
               ),
             ),
