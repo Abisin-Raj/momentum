@@ -577,7 +577,7 @@ class _DietAiTabState extends ConsumerState<DietAiTab> with AutomaticKeepAliveCl
               16, 
               16, 
               16, 
-              isKeyboardOpen ? 16 : 72,
+              isKeyboardOpen ? 16 : 16,
             ),
             child: Row(
               children: [
