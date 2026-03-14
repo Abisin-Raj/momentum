@@ -173,7 +173,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
   
-  get day => null; // Wait, used 'day' variable in build but it's not defined in _buildDayCell's simple scope properly if reused. Fixed below.
   
   // ignore: unused_element
   Future<Map<String, dynamic>?> _getDataForDate(DateTime date, bool isPast) async {
