@@ -183,7 +183,7 @@ class _EditWorkoutScreenState extends ConsumerState<EditWorkoutScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: splitDays,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final isSelected = _selectedDayIndex == index;
           return ChoiceChip(
