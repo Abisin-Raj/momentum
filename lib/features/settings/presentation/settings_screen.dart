@@ -563,7 +563,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final file = File('${tempDir.path}/momentum_backup_${DateFormat('yyyyMMdd').format(DateTime.now())}.json');
       await file.writeAsString(jsonString);
       
-      await SharePlus.shareXFiles([XFile(file.path)], text: 'Momentum Backup');
+      await Share.shareXFiles([XFile(file.path)], text: 'Momentum Backup');
       
     } catch (e) {
       if (mounted) {
