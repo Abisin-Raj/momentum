@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../database/app_database.dart';
 import 'database_providers.dart';
@@ -23,7 +22,7 @@ class SleepSummary {
 }
 
 @riverpod
-Stream<SleepSummary> sleepSummary(Ref ref) async* {
+Stream<dynamic> sleepSummary(Ref ref) async* {
   final logsAsync = ref.watch(sleepLogsProvider(days: 30));
   
   if (logsAsync.hasValue) {
@@ -37,18 +36,19 @@ Stream<SleepSummary> sleepSummary(Ref ref) async* {
     
     // Average 7 days
     final logs7d = logs.take(7).toList();
-    final total7d = logs7d.fold<int>(0, (sum, l) => sum + l.durationMinutes);
+    final total7d = logs7d.fold<int>(0, (sum, l) => sum + (l.durationMinutes as int));
     final avg7d = (total7d / logs7d.length) / 60.0;
     
     // Average 30 days
-    final total30d = logs.fold<int>(0, (sum, l) => sum + l.durationMinutes);
+    final total30d = logs.fold<int>(0, (sum, l) => sum + (l.durationMinutes as int));
     final avg30d = (total30d / logs.length) / 60.0;
     
     // Average Quality 7 days (only logs with quality > 0)
     final qualityLogs7d = logs7d.where((l) => l.quality != null && l.quality! > 0).toList();
     final avgQuality7d = qualityLogs7d.isEmpty 
         ? 0.0 
-        : qualityLogs7d.fold<int>(0, (sum, l) => sum + l.quality!) / qualityLogs7d.length;
+        : qualityLogs7d.fold<int>(0, (sum, l) => sum + ((l.quality as int?) ?? 0)) / qualityLogs7d.length;
+
 
     // Use centralized recovery score from last night
     final recoveryScore = SleepUtils.calculateRecoveryScore(lastNight.durationMinutes);
