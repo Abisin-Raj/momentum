@@ -156,7 +156,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 AsyncData(:final value) => _buildSplitView(
                   context,
                   ref,
-                  value,
+                  value.cast<Workout>(),
                   todayCompletedAsync,
                   currentSplitIndex,
                   totalSplitDays,
@@ -243,7 +243,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     return progressionAsync.when(
       data: (progression) {
-        final todayCompleted = todayCompletedAsync.valueOrNull ?? [];
+        final todayCompleted = todayCompletedAsync.value ?? [];
 
         // 1. Unified Targets from provider
         final todaysWorkouts = progression.todayWorkouts;
@@ -353,7 +353,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     WorkoutProgression progression,
   ) {
     // Legacy List View (Management Mode)
-    final todayCompleted = todayCompletedAsync.valueOrNull ?? [];
+    final todayCompleted = todayCompletedAsync.value ?? [];
     final activeSession = ref.watch(activeWorkoutSessionProvider);
 
     return ReorderableListView.builder(
