@@ -11,7 +11,7 @@ class HealthDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final healthState = ref.watch(healthNotifierProvider);
+    final healthState = ref.watch(healthProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -33,7 +33,7 @@ class HealthDetailScreen extends ConsumerWidget {
                   : const Icon(Icons.sync_rounded),
               onPressed: healthState.isLoading
                   ? null
-                  : () => ref.read(healthNotifierProvider.notifier).syncData(),
+                  : () => ref.read(healthProvider.notifier).syncData(),
               tooltip: 'Sync Now',
             ),
         ],
@@ -102,7 +102,7 @@ class HealthDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: () => ref.read(healthNotifierProvider.notifier).requestPermissions(),
+              onPressed: () => ref.read(healthProvider.notifier).requestPermissions(),
               icon: const Icon(Icons.link_rounded),
               label: const Text('Grant Access'),
             ),
@@ -117,7 +117,7 @@ class HealthDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final weightUnitAsync = ref.watch(weightUnitProvider);
-    final weightUnit = weightUnitAsync.valueOrNull ?? 'kg';
+    final weightUnit = weightUnitAsync.value ?? 'kg';
 
     return ListView(
 
