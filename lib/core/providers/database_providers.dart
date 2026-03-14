@@ -1,9 +1,5 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import '../database/app_database.dart';
-import 'workout_progression_provider.dart';
 
 part 'database_providers.g.dart';
 
@@ -23,22 +19,22 @@ Future<bool> isSetupComplete(Ref ref) async {
 }
 
 /// Provider for the current user
-@riverpod
-Future<User?> currentUser(Ref ref) async {
+@Riverpod(keepAlive: true)
+Future<dynamic> currentUser(Ref ref) async {
   final db = ref.watch(appDatabaseProvider);
   return db.getUser();
 }
 
 /// Provider for watching the current user
 @riverpod
-Stream<User?> userStream(Ref ref) {
+Stream<dynamic> userStream(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchUser();
 }
 
 /// Provider for all workouts (reactive stream)
 @riverpod
-Stream<List<Workout>> workoutsStream(Ref ref) {
+Stream<List<dynamic>> workoutsStream(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchAllWorkouts();
 }
@@ -50,22 +46,6 @@ Future<List<int>> todayCompletedWorkoutIds(Ref ref) async {
   return db.getTodayCompletedWorkoutIds();
 }
 
-/// Provider for the next workout in the cycle
-@riverpod
-Future<Workout?> nextWorkout(Ref ref) async {
-  final progression = await ref.watch(workoutProgressionProvider.future);
-  
-  if (progression.todayWorkouts.isEmpty) return null;
-  
-  // Return the first uncompleted workout for today
-  final todayCompleted = await ref.watch(todayCompletedWorkoutIdsProvider.future);
-  return progression.todayWorkouts.firstWhere(
-    (w) => !todayCompleted.contains(w.id),
-    orElse: () => progression.todayWorkouts.first,
-  );
-}
-
-/// Provider for activity grid data (last N days)
 /// Provider for activity grid data (last N days)
 @riverpod
 Stream<Map<DateTime, String>> activityGrid(Ref ref, int days) {
@@ -75,7 +55,7 @@ Stream<Map<DateTime, String>> activityGrid(Ref ref, int days) {
 
 /// Provider for exercises in a workout
 @riverpod
-Future<List<Exercise>> exercisesForWorkout(Ref ref, int workoutId) async {
+Future<List<dynamic>> exercisesForWorkout(Ref ref, int workoutId) async {
   final db = ref.watch(appDatabaseProvider);
   return db.getExercisesForWorkout(workoutId);
 }
@@ -103,14 +83,17 @@ Future<List<Map<String, dynamic>>> sessionHistory(Ref ref, int limit) async {
 
 /// Provider for exercise details of a specific session
 @riverpod
-Future<List<Map<String, dynamic>>> sessionExerciseDetails(Ref ref, int sessionId) async {
+Future<List<Map<String, dynamic>>> sessionExerciseDetails(
+  Ref ref,
+  int sessionId,
+) async {
   final db = ref.watch(appDatabaseProvider);
   return db.getSessionExerciseDetails(sessionId);
 }
 
 /// Provider for sleep logs (last 30 days)
 @riverpod
-Stream<List<SleepLog>> sleepLogs(Ref ref, {int days = 30}) {
+Stream<List<dynamic>> sleepLogs(Ref ref, {int days = 30}) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchSleepLogs(days);
 }
