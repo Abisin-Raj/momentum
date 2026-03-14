@@ -73,13 +73,13 @@ class _AnalyticsRecoverySection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final analyticsData = ref.watch(analyticsSummaryProvider).valueOrNull;
+    final analyticsData = ref.watch(analyticsSummaryProvider).value;
     final sleepSummaryAsync = ref.watch(sleepSummaryProvider);
 
     return sleepSummaryAsync.when(
       data: (summary) => _buildTopRow(context, analyticsData, summary),
       loading: () => const Center(child: LinearProgressIndicator()),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -162,16 +162,16 @@ class _AnalyticsMetricsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(analyticsSummaryProvider);
-    final user = ref.watch(currentUserProvider).valueOrNull;
-    final healthState = ref.watch(healthNotifierProvider);
-    final weightUnit = ref.watch(weightUnitProvider).valueOrNull ?? 'kg';
+    final user = ref.watch(currentUserProvider).value;
+    final healthState = ref.watch(healthProvider);
+    final weightUnit = ref.watch(weightUnitProvider).value ?? 'kg';
     final colorScheme = Theme.of(context).colorScheme;
 
     return analyticsAsync.when(
       data: (data) =>
           _buildMetricsGrid(context, data, user, healthState, weightUnit),
       loading: () => const Center(child: LinearProgressIndicator()),
-      error: (_, __) => Text(
+      error: (_, _) => Text(
         'Error loading metrics',
         style: TextStyle(color: colorScheme.error),
       ),
@@ -446,7 +446,7 @@ class _AnalyticsMuscleRecoverySection extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: LinearProgressIndicator()),
-          error: (_, __) => Text(
+          error: (_, _) => Text(
             'Error loading recovery',
             style: TextStyle(color: colorScheme.error, fontSize: 12),
           ),
