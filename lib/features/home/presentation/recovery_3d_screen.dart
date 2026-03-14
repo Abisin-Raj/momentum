@@ -62,7 +62,7 @@ class _Recovery3DScreenState extends ConsumerState<Recovery3DScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final boxingEnabledAsync = ref.watch(boxingGameEnabledProvider);
-    final boxingEnabled = boxingEnabledAsync.valueOrNull ?? true;
+    final boxingEnabled = boxingEnabledAsync.value ?? true;
     
     return Scaffold(
       extendBodyBehindAppBar: true,
