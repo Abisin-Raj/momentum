@@ -22,7 +22,7 @@ class _MomentumAppState extends ConsumerState<MomentumApp> {
   @override
   void initState() {
     super.initState();
-    _widgetSyncSubscription = ref.listenManual(widgetSyncProvider, (_, __) {});
+    _widgetSyncSubscription = ref.listenManual(widgetSyncProvider, (_, _) {});
   }
 
   @override
@@ -35,7 +35,7 @@ class _MomentumAppState extends ConsumerState<MomentumApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final themeModeAsync = ref.watch(appThemeModeProvider);
-    final themeKey = themeModeAsync.valueOrNull ?? 'black';
+    final themeKey = themeModeAsync.value ?? 'black';
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
