@@ -6,25 +6,47 @@ part of 'workout_progression_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$workoutProgressionHash() =>
-    r'0a40fb44f179ece72ecfacafe73d86096661260a';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [workoutProgression].
 @ProviderFor(workoutProgression)
-final workoutProgressionProvider =
-    AutoDisposeFutureProvider<WorkoutProgression>.internal(
-      workoutProgression,
-      name: r'workoutProgressionProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$workoutProgressionHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final workoutProgressionProvider = WorkoutProgressionProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef WorkoutProgressionRef =
-    AutoDisposeFutureProviderRef<WorkoutProgression>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class WorkoutProgressionProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<WorkoutProgression>,
+          WorkoutProgression,
+          FutureOr<WorkoutProgression>
+        >
+    with
+        $FutureModifier<WorkoutProgression>,
+        $FutureProvider<WorkoutProgression> {
+  WorkoutProgressionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'workoutProgressionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$workoutProgressionHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<WorkoutProgression> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<WorkoutProgression> create(Ref ref) {
+    return workoutProgression(ref);
+  }
+}
+
+String _$workoutProgressionHash() =>
+    r'3f3efdaa27f0d005b9a1ca5f21b5fff910523a23';
