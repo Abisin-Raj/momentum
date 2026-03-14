@@ -12,7 +12,7 @@ class SleepCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final healthState = ref.watch(healthNotifierProvider);
+    final healthState = ref.watch(healthProvider);
 
     return ThemedCard(
       padding: const EdgeInsets.all(24),
@@ -67,7 +67,7 @@ class SleepCard extends ConsumerWidget {
     }
     return IconButton(
       icon: const Icon(Icons.sync, size: 18),
-      onPressed: () => ref.read(healthNotifierProvider.notifier).syncData(),
+      onPressed: () => ref.read(healthProvider.notifier).syncData(),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
       tooltip: 'Sync with Health Connect',
