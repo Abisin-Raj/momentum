@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'database_providers.dart';
@@ -10,7 +9,7 @@ part 'core_providers.g.dart';
 @riverpod
 bool isSetupCompleteSync(Ref ref) {
   final asyncValue = ref.watch(isSetupCompleteProvider);
-  return asyncValue.valueOrNull ?? false;
+  return asyncValue.value ?? false;
 }
 
 /// Provider for current cycle position
