@@ -1,6 +1,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../database/app_database.dart';
 import 'package:momentum/core/services/ai_insights_service.dart';
 import 'package:momentum/core/providers/database_providers.dart';
 import 'package:momentum/core/services/settings_service.dart';
@@ -19,7 +20,7 @@ final dailyInsightProvider = FutureProvider.autoDispose<AIInsightResponse>((ref)
   ref.keepAlive();
   
   // Watch user data
-  final user = await ref.watch(currentUserProvider.future);
+  final user = (await ref.watch(currentUserProvider.future)) as User?;
   if (user == null) {
      return AIInsightResponse(
        text: "Welcome to Momentum! Setup your profile to get started.",
