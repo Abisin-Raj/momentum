@@ -117,7 +117,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     _scrollToBottom();
 
     try {
-      final apiKey = ref.read(geminiApiKeyProvider).valueOrNull;
+      final apiKey = ref.read(geminiApiKeyProvider).value;
       
       // Get Context (Diet + Workout)
       final dietContext = await _getDietContext();
@@ -176,7 +176,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     });
     
     try {
-       final apiKey = ref.read(geminiApiKeyProvider).valueOrNull;
+       final apiKey = ref.read(geminiApiKeyProvider).value;
        final dietContext = await _getDietContext();
        final workoutContext = await _getWorkoutContext();
        final combinedContext = "$dietContext\n\n$workoutContext";
@@ -240,7 +240,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     final colorScheme = theme.colorScheme;
     final db = ref.watch(appDatabaseProvider);
     final timeFormatAsync = ref.watch(timeFormatProvider);
-    final is24h = timeFormatAsync.valueOrNull == '24h';
+    final is24h = timeFormatAsync.value == '24h';
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -497,7 +497,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
       builder: (context) => Consumer(
         builder: (context, ref, _) {
           final modelAsync = ref.watch(geminiModelProvider);
-          final currentModel = modelAsync.valueOrNull;
+          final currentModel = modelAsync.value;
           
           return AlertDialog(
             title: const Text('Select Gemini Model'),
