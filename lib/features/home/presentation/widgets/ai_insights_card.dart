@@ -15,7 +15,7 @@ class AIInsightsCard extends ConsumerWidget {
     final apiKeyAsync = ref.watch(geminiApiKeyProvider);
     final colorScheme = Theme.of(context).colorScheme;
     
-    final insight = insightAsync.valueOrNull;
+    final insight = insightAsync.value;
     final mood = insight?.mood ?? 'hero';
     final type = insight?.type ?? 'general';
 
@@ -116,7 +116,7 @@ class AIInsightsCard extends ConsumerWidget {
                       Builder(
                         builder: (context) {
                           // Check API Key first
-                          final apiKey = apiKeyAsync.valueOrNull;
+                          final apiKey = apiKeyAsync.value;
                           final hasKey = apiKey != null && apiKey.isNotEmpty && !apiKey.contains('YOUR_API_KEY');
 
                           if (!hasKey) {
