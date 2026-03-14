@@ -90,3 +90,10 @@ class UserSetup extends _$UserSetup {
     // until they finish creating workouts
   }
 }
+
+/// Provider for the current user
+@Riverpod(keepAlive: true)
+Future<dynamic> currentUser(Ref ref) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getUser();
+}
