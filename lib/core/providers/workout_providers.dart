@@ -164,7 +164,7 @@ class ActiveWorkoutSession extends _$ActiveWorkoutSession {
       final user = await ref.read(currentUserProvider.future);
       final workout = await db.getWorkout(state!.workoutId);
       final exerciseDefs = await db.getExercisesForWorkout(state!.workoutId);
-      final apiKey = ref.read(geminiApiKeyProvider).valueOrNull;
+      final apiKey = ref.read(geminiApiKeyProvider).value;
 
       if (user != null && workout != null) {
         final calories = await ref.read(aiInsightsServiceProvider).estimateCalorieBurn(
@@ -439,4 +439,18 @@ class WorkoutManager extends _$WorkoutManager {
     return DateTime(now.year, now.month, now.day).add(Duration(days: daysAhead));
   }
 
+}
+
+/// Provider for the next scheduled workout
+@riverpod
+Future<dynamic> nextWorkout(Ref ref) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getNextWorkout();
+}
+
+/// Provider for the workout scheduled after the next one
+@riverpod
+Future<dynamic> tomorrowWorkout(Ref ref) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getTomorrowWorkout();
 }
