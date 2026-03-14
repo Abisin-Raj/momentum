@@ -88,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Resume Banner Logic: Only show if active session matches today's workout
     final todayWorkout =
-        progressionAsync.valueOrNull?.todayWorkouts.firstOrNull;
+        progressionAsync.value?.todayWorkouts.firstOrNull;
     final shouldShowResume =
         activeSession != null &&
         todayWorkout != null &&
@@ -179,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -459,7 +459,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) {
     if (workout == null) {
       final hasWorkouts =
-          ref.watch(workoutsStreamProvider).valueOrNull?.isNotEmpty ?? false;
+          ref.watch(workoutsStreamProvider).value?.isNotEmpty ?? false;
       if (hasWorkouts) {
         return _buildRestDayState(context);
       }
@@ -888,9 +888,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) {
     final insightAsync = ref.watch(workoutInsightProvider(workout.id));
 
-    // Use valueOrNull to persist data during refreshes/loading states
+    // Use value to persist data during refreshes/loading states
     // This prevents the UI from collapsing (flickering) when the provider updates
-    final data = insightAsync.valueOrNull;
+    final data = insightAsync.value;
 
     // If no data yet (initial load), show nothing
     if (data == null) return const SizedBox.shrink();
@@ -1187,7 +1187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildConsistencyGrid(WidgetRef ref) {
     final gridAsync = ref.watch(activityGridProvider(200));
-    final data = gridAsync.valueOrNull;
+    final data = gridAsync.value;
 
     // If no data yet, show nothing
     if (data == null) return const SizedBox.shrink();
