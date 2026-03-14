@@ -364,8 +364,8 @@ Instructions:
     String? preferredModel,
   }) async {
     // Updated 2026 Model Priority List
-    final modelsToTry = [
-      if (preferredModel != null) preferredModel,
+    final List<String> modelsToTry = [
+      preferredModel ?? '',
       'gemini-3.0-flash',
       'gemini-3.0-pro-preview',
       'gemini-2.0-flash',
@@ -374,7 +374,7 @@ Instructions:
       'gemini-1.5-flash',
       'gemini-1.5-pro',
       'gemini-1.5-flash-8b',
-    ];
+    ].where((m) => m.isNotEmpty).toList();
 
     // Remove duplicates while preserving order
     final uniqueModels = modelsToTry.toSet().toList();
