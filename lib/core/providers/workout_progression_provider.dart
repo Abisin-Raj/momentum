@@ -1,14 +1,15 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/workout_progression.dart';
+import '../database/app_database.dart';
 import 'database_providers.dart';
 
 part 'workout_progression_provider.g.dart';
 
 @riverpod
 Future<WorkoutProgression> workoutProgression(Ref ref) async {
-  final user = await ref.watch(currentUserProvider.future);
-  final allWorkouts = await ref.watch(workoutsStreamProvider.future);
+  final user = (await ref.watch(currentUserProvider.future)) as User?;
+  final dynamicWorkouts = await ref.watch(workoutsStreamProvider.future);
+  final allWorkouts = dynamicWorkouts.cast<Workout>();
   final todayCompletedIds = await ref.watch(todayCompletedWorkoutIdsProvider.future);
 
   if (user == null || allWorkouts.isEmpty) {
