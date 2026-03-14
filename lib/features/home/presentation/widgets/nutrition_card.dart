@@ -237,7 +237,7 @@ class _NutritionCardState extends ConsumerState<NutritionCard> {
                   );
                 },
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               );
             }
           ),
