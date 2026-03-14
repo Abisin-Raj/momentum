@@ -127,7 +127,7 @@ class _DietScreenState extends ConsumerState<DietScreen> with SingleTickerProvid
       builder: (context) => Consumer(
         builder: (context, ref, _) {
           final modelAsync = ref.watch(geminiModelProvider);
-          final currentModel = modelAsync.valueOrNull;
+          final currentModel = modelAsync.value;
           
           return AlertDialog(
             title: const Text('Select Gemini Model'),
