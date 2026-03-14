@@ -17,8 +17,8 @@ class UserAnalyticsScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final activityAsync = ref.watch(activityGridProvider(365));
     final analyticsAsync = ref.watch(analyticsSummaryProvider);
-    final healthState = ref.watch(healthNotifierProvider);
-    final weightUnit = ref.watch(weightUnitProvider).valueOrNull ?? 'kg';
+    final healthState = ref.watch(healthProvider);
+    final weightUnit = ref.watch(weightUnitProvider).value ?? 'kg';
     final userAsync = ref.watch(currentUserProvider);
     
     return Scaffold(
@@ -70,7 +70,7 @@ class UserAnalyticsScreen extends ConsumerWidget {
                         _buildSummaryCard(
                           context, 
                           weightUnit.toUpperCase(), 
-                          _formatWeight(weightUnit, healthState.latestWeight ?? userAsync.valueOrNull?.weightKg), 
+                          _formatWeight(weightUnit, healthState.latestWeight ?? userAsync.value?.weightKg), 
                           Icons.monitor_weight_rounded, 
                           colorScheme.tertiary
                         ),
