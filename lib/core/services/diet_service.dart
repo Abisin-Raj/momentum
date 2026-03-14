@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'settings_service.dart';
