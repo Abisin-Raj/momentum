@@ -452,7 +452,7 @@ class _DietAiTabState extends ConsumerState<DietAiTab> with AutomaticKeepAliveCl
     final theme = Theme.of(context);
     final db = ref.watch(appDatabaseProvider);
     final timeFormatAsync = ref.watch(timeFormatProvider);
-    final is24h = timeFormatAsync.valueOrNull == '24h';
+    final is24h = timeFormatAsync.value == '24h';
     
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final isKeyboardOpen = bottomInset > 0;
