@@ -77,8 +77,8 @@ final widgetSyncProvider = FutureProvider<void>((ref) async {
 
   // Wait for data to be available (skip loading states if possible, or just proceed)
   // We utilize .when to unwrap safely, or default to null/empty if loading
-  final user = userAsync.valueOrNull;
-  final workouts = workoutsAsync.valueOrNull; // Just to trigger dependency
+  final user = userAsync.value;
+  final workouts = workoutsAsync.value; // Just to trigger dependency
   
   debugPrint('[WidgetSync] Triggered. User: ${user?.name}, Workouts: ${workouts?.length}');
 
@@ -166,7 +166,7 @@ final widgetSyncProvider = FutureProvider<void>((ref) async {
     debugPrint('[WidgetSync] Calling widgetService.updateWidget with: Streak=$streak, Title=$title');
     
     // 4. Get Theme
-    final currentTheme = ref.read(widgetThemeProvider).valueOrNull ?? 'classic';
+    final currentTheme = ref.read(widgetThemeProvider).value ?? 'classic';
 
     // 5. Update Widget
     await widgetService.updateWidget(
