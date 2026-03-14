@@ -47,7 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (context) => Consumer(
         builder: (context, ref, _) {
            final currentThemeAsync = ref.read(widgetThemeProvider); // Read once for init
-           final initialTheme = currentThemeAsync.valueOrNull ?? 'classic';
+           final initialTheme = currentThemeAsync.value ?? 'classic';
            
            return _WidgetThemeSelectorDialog(initialTheme: initialTheme);
         },
@@ -232,7 +232,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                        );
                      },
                      loading: () => const Center(child: LinearProgressIndicator()),
-                     error: (_, __) => const SizedBox.shrink(),
+                     error: (_, _) => const SizedBox.shrink(),
                    ),
 
                    const SizedBox(height: 32),
@@ -244,7 +244,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                      iconColor: Colors.redAccent,
                      title: 'Health Connect',
                      subtitle: 'Sync Fit/Samsung Health',
-                     onTap: () => ref.read(healthNotifierProvider.notifier).requestPermissions(),
+                     onTap: () => ref.read(healthProvider.notifier).requestPermissions(),
                    ),
                    const SizedBox(height: 12),
                    _buildSettingsTile(
@@ -393,7 +393,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                        },
                      ),
                      loading: () => const SizedBox(height: 56, child: Center(child: CircularProgressIndicator())),
-                     error: (_, __) => const SizedBox.shrink(),
+                     error: (_, _) => const SizedBox.shrink(),
                    ),
 
                    const SizedBox(height: 48),
@@ -563,7 +563,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final file = File('${tempDir.path}/momentum_backup_${DateFormat('yyyyMMdd').format(DateTime.now())}.json');
       await file.writeAsString(jsonString);
       
-      await Share.shareXFiles([XFile(file.path)], text: 'Momentum Backup');
+      await SharePlus.shareXFiles([XFile(file.path)], text: 'Momentum Backup');
       
     } catch (e) {
       if (mounted) {
