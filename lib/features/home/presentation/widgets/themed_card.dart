@@ -20,7 +20,7 @@ class ThemedCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeAsync = ref.watch(widgetThemeProvider);
-    final theme = themeAsync.valueOrNull ?? 'classic';
+    final theme = themeAsync.value ?? 'classic';
 
     if (theme == 'liquid_glass') {
       return _buildLiquidGlass(context);
