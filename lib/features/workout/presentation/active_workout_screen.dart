@@ -237,7 +237,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
   Future<void> _incrementSet(
     int exerciseId,
     int targetSets,
-    AsyncValue<List<Exercise>> exercisesAsync,
+    AsyncValue<List<dynamic>> exercisesAsync,
   ) async {
     // Capture Duration!
     if (_currentWorkExerciseId == exerciseId) {
@@ -265,7 +265,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
       setState(() => _restingExerciseId = null);
 
       // Check all done
-      final exercisesList = exercisesAsync.valueOrNull ?? [];
+      final exercisesList = exercisesAsync.value ?? [];
       final allDone = exercisesList.every((e) {
         final sets = e.id == exerciseId ? next : (_completedSets[e.id] ?? 0);
         return sets >= e.sets;
@@ -507,7 +507,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
 
     // Update cache for work timer
     if (exercisesAsync.hasValue) {
-      _cachedExercises = exercisesAsync.value!;
+      _cachedExercises = (exercisesAsync.value ?? []).cast<Exercise>();
 
       // Sort matching UI logic so 'active' calculation matches visual order
       _cachedExercises.sort((a, b) {
@@ -540,7 +540,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 children: [
-                  _buildChecklistPage(exercisesAsync, theme),
+                  _buildChecklistPage(exercisesAsync.whenData((list) => list.cast<Exercise>()), theme),
                   _buildTimerPage(theme),
                 ],
               ),
@@ -603,7 +603,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
               ),
               ValueListenableBuilder<int>(
                 valueListenable: _timerTick,
-                builder: (context, _, __) => Text(
+                builder: (context, _, _) => Text(
                   _formatDuration(_displayDuration),
                   style: TextStyle(
                     fontFamily: 'monospace',
@@ -1085,7 +1085,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
           const SizedBox(height: 16),
           ValueListenableBuilder<int>(
             valueListenable: _timerTick,
-            builder: (context, _, __) => Text(
+            builder: (context, _, _) => Text(
               _formatDuration(_displayDuration),
               style: TextStyle(
                 fontSize: 80,
