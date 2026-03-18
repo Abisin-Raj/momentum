@@ -10,7 +10,6 @@ import '../../../core/providers/workout_providers.dart';
 import '../../../core/services/thumbnail_service.dart';
 import '../../../core/services/image_storage_service.dart';
 import '../../../core/constants/muscle_data.dart';
-import '../../../core/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// Screen to create a workout as part of a split
@@ -30,13 +29,14 @@ class CreateWorkoutScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CreateWorkoutScreen> createState() => _CreateWorkoutScreenState();
+  ConsumerState<CreateWorkoutScreen> createState() =>
+      _CreateWorkoutScreenState();
 }
 
 class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   final _pageController = PageController();
   final _nameController = TextEditingController();
-  
+
   late int _selectedSplitIndex; // 0-based index
   int _currentStep = 0;
   String? _selectedThumbnail;
@@ -45,14 +45,14 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   bool _isSaving = false;
   bool _isLoading = false; // To show loading spinner during exercise fetch
   bool _isRestDay = false; // New toggle
-  final List<({String name, int sets, int reps, String muscle})> _exercises = [];
+  final List<({String name, int sets, int reps, String muscle})> _exercises =
+      [];
   // Muscle Categories Map
   final Map<String, List<String>> _muscleGroups = MuscleData.groups;
-  
+
   String _selectedCategory = 'Chest';
   String _selectedMuscle = 'Chest';
 
-  
   // Exercise inputs
   final _exNameController = TextEditingController();
   final _setsController = TextEditingController(text: '3');
@@ -69,7 +69,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
 
   Future<void> _loadExistingData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final w = widget.existingWorkout!;
       _nameController.text = w.name;
@@ -77,15 +77,19 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
       _selectedClock = w.clockType;
       _isRestDay = w.isRestDay;
 
-      
       // Fetch exercises
       final db = ref.read(appDatabaseProvider);
       final exercises = await db.getExercisesForWorkout(w.id);
-      
+
       if (mounted) {
         setState(() {
           for (var e in exercises) {
-            _exercises.add((name: e.name, sets: e.sets, reps: e.reps, muscle: e.primaryMuscleGroup ?? 'Other'));
+            _exercises.add((
+              name: e.name,
+              sets: e.sets,
+              reps: e.reps,
+              muscle: e.primaryMuscleGroup ?? 'Other',
+            ));
           }
           _isLoading = false;
         });
@@ -103,10 +107,11 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
       );
     }
-
 
     final steps = [
       _buildNameStep(),
@@ -122,7 +127,11 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
 
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(widget.existingWorkout != null ? 'Edit Workout' : 'Workout ${widget.index} of ${widget.totalDays}'),
+        title: Text(
+          widget.existingWorkout != null
+              ? 'Edit Workout'
+              : 'Workout ${widget.index} of ${widget.totalDays}',
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -150,7 +159,6 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
             color: colorScheme.primary,
           ),
 
-          
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -158,9 +166,8 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
               onPageChanged: (index) => setState(() => _currentStep = index),
               children: steps,
             ),
-
           ),
-          
+
           // Navigation buttons
           Padding(
             padding: const EdgeInsets.all(20),
@@ -169,9 +176,12 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                 if (_currentStep == 0)
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
                   ),
-                  
+
                 if (_currentStep > 0)
                   TextButton(
                     onPressed: () {
@@ -180,9 +190,11 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                         curve: Curves.easeOut,
                       );
                     },
-                    child: Text('Back', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                    child: Text(
+                      'Back',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
                   ),
-
 
                 const Spacer(),
                 FilledButton(
@@ -190,7 +202,10 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                     disabledBackgroundColor: colorScheme.surfaceContainer,
                   ),
                   child: _isSaving
@@ -218,21 +233,28 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
 
   bool _canProceed() {
     if (_isRestDay) {
-      return _nameController.text.trim().isNotEmpty && _nameController.text.length <= 50;
+      return _nameController.text.trim().isNotEmpty &&
+          _nameController.text.length <= 50;
     }
 
     switch (_currentStep) {
-      case 0: return _nameController.text.trim().isNotEmpty && _nameController.text.length <= 50;
-      case 1: return true; // Thumbnail is optional (Skip button handles null)
-      case 2: return _exercises.isNotEmpty;
-      case 3: return true; // Clock selection is always valid
-      default: return false;
+      case 0:
+        return _nameController.text.trim().isNotEmpty &&
+            _nameController.text.length <= 50;
+      case 1:
+        return true; // Thumbnail is optional (Skip button handles null)
+      case 2:
+        return _exercises.isNotEmpty;
+      case 3:
+        return true; // Clock selection is always valid
+      default:
+        return false;
     }
   }
 
   void _nextStep() async {
     final stepsCount = _isRestDay ? 1 : 4;
-    
+
     if (_currentStep < stepsCount - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -242,9 +264,9 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     }
 
     if (_isSaving) return;
-    
+
     setState(() => _isSaving = true);
-    
+
     try {
       // Save and proceed
       if (widget.existingWorkout != null) {
@@ -252,9 +274,9 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
       } else {
         await _saveWorkout();
       }
-      
+
       if (!mounted) return;
-      
+
       if (widget.existingWorkout != null) {
         // Just pop if editing
         Navigator.of(context).pop();
@@ -264,22 +286,24 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
       } else {
         // Finish split setup OR Standalone creation
         if (widget.isStandalone) {
-            Navigator.of(context).pop();
-            return;
+          Navigator.of(context).pop();
+          return;
         }
 
         // Update user split days
         final db = ref.read(appDatabaseProvider);
         final user = await db.getUser();
         if (user != null) {
-          await db.saveUser(user.toCompanion(true).copyWith(
-            splitDays: drift.Value(widget.totalDays),
-          ));
+          await db.saveUser(
+            user
+                .toCompanion(true)
+                .copyWith(splitDays: drift.Value(widget.totalDays)),
+          );
         }
-        
+
         // Invalidate setup check to allow router to redirect to Home
         ref.invalidate(isSetupCompleteProvider);
-        
+
         if (mounted) {
           context.go('/home');
         }
@@ -289,18 +313,16 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
         // Check for drift InvalidDataException specifically
         final errorMessage = e.toString();
         String userMessage = 'Error saving workout';
-        
-        if (errorMessage.contains('InvalidDataException') && errorMessage.contains('name: Must at most be 100 characters')) {
+
+        if (errorMessage.contains('InvalidDataException') &&
+            errorMessage.contains('name: Must at most be 100 characters')) {
           userMessage = 'Name is too long (max 50 characters)';
         } else {
-            userMessage = 'Error saving: ${e.toString().split('\n').first}';
+          userMessage = 'Error saving: ${e.toString().split('\n').first}';
         }
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(userMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(userMessage), backgroundColor: Colors.red),
         );
         debugPrint('Error saving workout: $e\n$st');
       }
@@ -314,7 +336,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   Future<void> _updateWorkout() async {
     final db = ref.read(appDatabaseProvider);
     final w = widget.existingWorkout!;
-    
+
     // Prepare thumbnail path
     String? thumbPath = _isRestDay ? null : _selectedThumbnail;
     if (thumbPath != null && thumbPath.startsWith('http')) {
@@ -322,17 +344,25 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     }
 
     // Update workout details
-    await db.updateWorkout(w.toCompanion(true).copyWith(
-      name: drift.Value(_nameController.text.trim()),
-      shortCode: drift.Value(_isRestDay ? 'R' : _nameController.text.trim()[0].toUpperCase()),
-      thumbnailUrl: drift.Value(thumbPath),
-      clockType: drift.Value(_isRestDay ? ClockType.none : _selectedClock),
-      isRestDay: drift.Value(_isRestDay),
-    ));
-    
+    await db.updateWorkout(
+      w
+          .toCompanion(true)
+          .copyWith(
+            name: drift.Value(_nameController.text.trim()),
+            shortCode: drift.Value(
+              _isRestDay ? 'R' : _nameController.text.trim()[0].toUpperCase(),
+            ),
+            thumbnailUrl: drift.Value(thumbPath),
+            clockType: drift.Value(
+              _isRestDay ? ClockType.none : _selectedClock,
+            ),
+            isRestDay: drift.Value(_isRestDay),
+          ),
+    );
+
     // Replace exercises (Delete all + Re-insert)
     await db.deleteExercisesForWorkout(w.id);
-    
+
     if (!_isRestDay) {
       for (int i = 0; i < _exercises.length; i++) {
         final ex = _exercises[i];
@@ -349,7 +379,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
         );
       }
     }
-      
+
     // Refresh workout list
     ref.invalidate(workoutsStreamProvider);
   }
@@ -358,7 +388,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     final db = ref.read(appDatabaseProvider);
     // Note: WorkoutManager provides a convenient wrapper but we use db directly for now
     final _ = ref.read(workoutManagerProvider.notifier);
-    
+
     // Prepare thumbnail path
     String? thumbPath = _isRestDay ? null : _selectedThumbnail;
     if (thumbPath != null && thumbPath.startsWith('http')) {
@@ -369,14 +399,16 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     final workoutId = await db.addWorkout(
       WorkoutsCompanion(
         name: drift.Value(_nameController.text.trim()),
-        shortCode: drift.Value(_isRestDay ? 'R' : _nameController.text.trim()[0].toUpperCase()),
+        shortCode: drift.Value(
+          _isRestDay ? 'R' : _nameController.text.trim()[0].toUpperCase(),
+        ),
         thumbnailUrl: drift.Value(thumbPath),
         orderIndex: drift.Value(_selectedSplitIndex), // Use selected index
         clockType: drift.Value(_isRestDay ? ClockType.none : _selectedClock),
         isRestDay: drift.Value(_isRestDay),
       ),
     );
-    
+
     // Add exercises
     if (!_isRestDay) {
       for (int i = 0; i < _exercises.length; i++) {
@@ -394,7 +426,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
         );
       }
     }
-    
+
     // Refresh workout list
     ref.invalidate(workoutsStreamProvider);
   }
@@ -410,7 +442,6 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
   Widget _buildNameStep() {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
-
       builder: (context, constraints) {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -430,7 +461,7 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                 ),
 
                 const SizedBox(height: 16),
-                
+
                 // Toggle Type
                 Container(
                   padding: const EdgeInsets.all(4),
@@ -453,10 +484,15 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                   controller: _nameController,
                   style: TextStyle(fontSize: 24, color: colorScheme.onSurface),
                   textAlign: TextAlign.center,
-                  maxLength: 50, // Prevent database overflow (Drift limit is 100, we stay safer)
+                  maxLength:
+                      50, // Prevent database overflow (Drift limit is 100, we stay safer)
                   decoration: InputDecoration(
                     hintText: 'e.g., Pull Day',
-                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.6,
+                      ),
+                    ),
                     border: InputBorder.none,
                     counterText: "", // Hide character counter for cleaner look
                   ),
@@ -464,16 +500,16 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                   textCapitalization: TextCapitalization.words,
                   onChanged: (_) => setState(() {}),
                 ),
-                
+
                 if (widget.isStandalone) ...[
                   const SizedBox(height: 48),
                   Text(
                     'ASSIGN TO DAY',
                     style: TextStyle(
-                      fontSize: 12, 
-                      fontWeight: FontWeight.bold, 
-                      color: colorScheme.primary, 
-                      letterSpacing: 1.2
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                      letterSpacing: 1.2,
                     ),
                   ),
 
@@ -485,14 +521,22 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                     children: List.generate(widget.totalDays, (index) {
                       final isSelected = _selectedSplitIndex == index;
                       return GestureDetector(
-                        onTap: () => setState(() => _selectedSplitIndex = index),
+                        onTap: () =>
+                            setState(() => _selectedSplitIndex = index),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected ? colorScheme.primary : colorScheme.surfaceContainer,
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
+                              color: isSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.outlineVariant,
                               width: 1,
                             ),
                           ),
@@ -500,11 +544,12 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
                           child: Text(
                             'Day ${index + 1}',
                             style: TextStyle(
-                              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                              color: isSelected
+                                  ? colorScheme.onPrimary
+                                  : colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-
                         ),
                       );
                     }),
@@ -531,7 +576,9 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+            color: isSelected
+                ? colorScheme.onPrimary
+                : colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -545,13 +592,12 @@ class _CreateWorkoutScreenState extends ConsumerState<CreateWorkoutScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final thumbnailService = ref.watch(thumbnailServiceProvider);
 
-    
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -600,20 +646,33 @@ Row(
               future: thumbnailService.searchImages(_searchQuery),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator(color: colorScheme.primary));
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  );
                 }
 
-                
                 final images = snapshot.data!;
                 if (images.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.image_search, size: 48, color: colorScheme.outline),
+                        Icon(
+                          Icons.image_search,
+                          size: 48,
+                          color: colorScheme.outline,
+                        ),
                         const SizedBox(height: 16),
-                        Text('No images found', style: TextStyle(color: colorScheme.onSurfaceVariant)),
-                        TextButton(onPressed: () => setState(() {}), child: const Text('Retry')),
+                        Text(
+                          'No images found',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() {}),
+                          child: const Text('Retry'),
+                        ),
                       ],
                     ),
                   );
@@ -629,15 +688,15 @@ Row(
                   itemBuilder: (context, index) {
                     final url = images[index];
                     final isSelected = _selectedThumbnail == url;
-                    
+
                     return GestureDetector(
                       onTap: () => setState(() => _selectedThumbnail = url),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected 
-                                ? colorScheme.primary 
+                            color: isSelected
+                                ? colorScheme.primary
                                 : colorScheme.outline.withValues(alpha: 0.1),
                             width: isSelected ? 3 : 1,
                           ),
@@ -651,11 +710,21 @@ Row(
                             child: SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary.withValues(alpha: 0.3)),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
                             ),
                           ),
                           errorWidget: (context, url, error) => Center(
-                            child: Icon(Icons.broken_image, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                            child: Icon(
+                              Icons.broken_image,
+                              color: colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -670,15 +739,12 @@ Row(
     );
   }
 
-
-
   // ... (inside build method or extracting widget)
-  
+
   // STEP 3: Exercises
   Widget _buildExercisesStep() {
     final colorScheme = Theme.of(context).colorScheme;
     return ListView.separated(
-
       padding: const EdgeInsets.all(24),
       // +1 for the "Add Exercise" form at the end
       itemCount: _exercises.length + 1,
@@ -691,7 +757,9 @@ Row(
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.3),
+              ),
             ),
 
             child: Column(
@@ -701,7 +769,10 @@ Row(
                 Text(
                   'Add Exercise',
                   style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -718,7 +789,6 @@ Row(
                           fillColor: colorScheme.surface,
                         ),
 
-
                         textCapitalization: TextCapitalization.sentences,
                         textInputAction: TextInputAction.next,
                       ),
@@ -726,7 +796,7 @@ Row(
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Muscle Selector (Grouped)
                 Row(
                   children: [
@@ -740,20 +810,27 @@ Row(
                           labelText: 'Muscle Group',
                           filled: true,
                           fillColor: colorScheme.surface,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                         ),
                         dropdownColor: colorScheme.surfaceContainerHighest,
                         style: TextStyle(color: colorScheme.onSurface),
-                        items: _muscleGroups.keys.map((c) => DropdownMenuItem(
-                          value: c, 
-                          child: Text(c, overflow: TextOverflow.ellipsis),
-                        )).toList(),
+                        items: _muscleGroups.keys
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(c, overflow: TextOverflow.ellipsis),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (val) {
                           if (val != null) {
                             setState(() {
                               _selectedCategory = val;
                               // Default to general category name when switching
-                              _selectedMuscle = _muscleGroups[val]!.first; 
+                              _selectedMuscle = _muscleGroups[val]!.first;
                             });
                           }
                         },
@@ -770,22 +847,30 @@ Row(
                           labelText: 'Target',
                           filled: true,
                           fillColor: colorScheme.surface,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                         ),
                         dropdownColor: colorScheme.surfaceContainerHighest,
                         style: TextStyle(color: colorScheme.onSurface),
-                        items: (_muscleGroups[_selectedCategory] ?? ['Other']).map((m) => DropdownMenuItem(
-                          value: m, 
-                          child: Text(m, overflow: TextOverflow.ellipsis),
-                        )).toList(),
-                        onChanged: (val) => setState(() => _selectedMuscle = val ?? 'Other'),
+                        items: (_muscleGroups[_selectedCategory] ?? ['Other'])
+                            .map(
+                              (m) => DropdownMenuItem(
+                                value: m,
+                                child: Text(m, overflow: TextOverflow.ellipsis),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedMuscle = val ?? 'Other'),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 Row(
                   children: [
                     Expanded(
@@ -799,8 +884,6 @@ Row(
                           filled: true,
                           fillColor: colorScheme.surface,
                         ),
-
-
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -816,55 +899,61 @@ Row(
                           filled: true,
                           fillColor: colorScheme.surface,
                         ),
-
-
                       ),
                     ),
                     const SizedBox(width: 12),
                     IconButton.filled(
                       onPressed: _addExercise,
                       icon: const Icon(Icons.add),
-                      style: IconButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary),
+                      style: IconButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                      ),
                     ),
-
                   ],
                 ),
               ],
             ),
           );
         }
-        
+
         // Otherwise render the exercise tile
         final ex = _exercises[index];
         return ListTile(
           tileColor: colorScheme.surfaceContainer,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           title: Text(ex.name, style: TextStyle(color: colorScheme.onSurface)),
-          subtitle: Text('${ex.muscle} • ${ex.sets} sets x ${ex.reps} reps',
-              style: TextStyle(color: colorScheme.onSurfaceVariant)),
+          subtitle: Text(
+            '${ex.muscle} • ${ex.sets} sets x ${ex.reps} reps',
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
           trailing: IconButton(
             icon: Icon(Icons.remove_circle_outline, color: colorScheme.error),
             onPressed: () => setState(() => _exercises.removeAt(index)),
           ),
         );
-
       },
     );
   }
-  
+
   void _addExercise() {
     final name = _exNameController.text.trim();
     // Parse as double first to handle "12.0" or "12." gracefully, then round to int
     final setsDouble = double.tryParse(_setsController.text) ?? 3;
     final repsDouble = double.tryParse(_repsController.text) ?? 10;
-    
+
     final sets = setsDouble.round();
     final reps = repsDouble.round();
-    
+
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter an exercise name', style: TextStyle(color: Colors.white)),
+          content: Text(
+            'Please enter an exercise name',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
@@ -873,7 +962,12 @@ Row(
     }
 
     setState(() {
-      _exercises.add((name: name, sets: sets, reps: reps, muscle: _selectedMuscle));
+      _exercises.add((
+        name: name,
+        sets: sets,
+        reps: reps,
+        muscle: _selectedMuscle,
+      ));
       _exNameController.clear();
       // Keep sets/reps and muscle as is for convenience
     });
@@ -883,7 +977,6 @@ Row(
   Widget _buildClockStep() {
     final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
-
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -922,18 +1015,24 @@ Row(
       ),
     );
   }
-  
-  Widget _buildClockOption(ClockType type, String title, String subtitle, IconData icon) {
+
+  Widget _buildClockOption(
+    ClockType type,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _selectedClock == type;
 
-    
     return GestureDetector(
       onTap: () => setState(() => _selectedClock = type),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : colorScheme.surfaceContainer,
+          color: isSelected
+              ? colorScheme.primary.withValues(alpha: 0.1)
+              : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? colorScheme.primary : Colors.transparent,
@@ -945,7 +1044,9 @@ Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
               size: 28,
             ),
 
@@ -959,7 +1060,9 @@ Row(
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurface,
                     ),
                   ),
 
@@ -970,13 +1073,11 @@ Row(
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-
                 ],
               ),
             ),
             if (isSelected)
               Icon(Icons.check_circle, color: colorScheme.primary),
-
           ],
         ),
       ),

@@ -3,16 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/providers/database_providers.dart';
-
 import '../../../core/providers/workout_progression_provider.dart';
 import '../../../core/models/workout_progression.dart';
 import '../../../core/providers/workout_providers.dart';
 import '../../../core/database/app_database.dart';
 import 'active_workout_screen.dart';
 import 'edit_workout_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:momentum/core/utils/image_utils.dart';
-import 'dart:io';
 
 /// Workout screen - shows list of workouts with completion states
 /// Design: Date header, focus subtitle, workout cards with status badges
@@ -25,18 +22,18 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   bool _showAllWorkouts = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final workoutsAsync = ref.watch(workoutsStreamProvider);
     final todayCompletedAsync = ref.watch(todayCompletedWorkoutIdsProvider);
     final userAsync = ref.watch(currentUserProvider);
-    
+
     final userGoal = switch (userAsync) {
       AsyncData(:final value) => value?.goal ?? 'Fitness & Wellness',
       _ => 'Fitness & Wellness',
     };
-    
+
     // Get user's current split index (manual progression, not tied to weekday)
     final currentSplitIndex = switch (userAsync) {
       AsyncData(:final value) => value?.currentSplitIndex ?? 0,
@@ -47,13 +44,12 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       AsyncData(:final value) => value?.splitDays ?? 0,
       _ => 0,
     };
-    
+
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -68,7 +64,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        DateFormat('EEE, MMM d').format(DateTime.now()).toUpperCase(),
+                        DateFormat(
+                          'EEE, MMM d',
+                        ).format(DateTime.now()).toUpperCase(),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -79,29 +77,35 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
                       // Toggle: Today / All
                       GestureDetector(
-                        onTap: () => setState(() => _showAllWorkouts = !_showAllWorkouts),
+                        onTap: () => setState(
+                          () => _showAllWorkouts = !_showAllWorkouts,
+                        ),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: _showAllWorkouts 
-                                ? colorScheme.primary.withValues(alpha: 0.15) 
+                            color: _showAllWorkouts
+                                ? colorScheme.primary.withValues(alpha: 0.15)
                                 : colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: _showAllWorkouts 
-                                  ? colorScheme.primary 
+                              color: _showAllWorkouts
+                                  ? colorScheme.primary
                                   : colorScheme.outlineVariant,
                             ),
-
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _showAllWorkouts ? Icons.calendar_view_week : Icons.today,
+                                _showAllWorkouts
+                                    ? Icons.calendar_view_week
+                                    : Icons.today,
                                 size: 16,
-                                color: _showAllWorkouts 
-                                    ? colorScheme.primary 
+                                color: _showAllWorkouts
+                                    ? colorScheme.primary
                                     : colorScheme.onSurfaceVariant,
                               ),
 
@@ -111,11 +115,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: _showAllWorkouts 
-                                      ? colorScheme.primary 
+                                  color: _showAllWorkouts
+                                      ? colorScheme.primary
                                       : colorScheme.onSurfaceVariant,
                                 ),
-
                               ),
                             ],
                           ),
@@ -143,32 +146,47 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-
                 ],
               ),
             ),
-            
+
             // Workout Content
             Expanded(
               child: switch (workoutsAsync) {
-                AsyncData(:final value) => _buildSplitView(context, ref, value, todayCompletedAsync, currentSplitIndex, totalSplitDays),
-                AsyncError(:final error) => Center(child: Text('Error: $error', style: TextStyle(color: colorScheme.error))),
-                _ => Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+                AsyncData(:final value) => _buildSplitView(
+                  context,
+                  ref,
+                  value,
+                  todayCompletedAsync,
+                  currentSplitIndex,
+                  totalSplitDays,
+                ),
+                AsyncError(:final error) => Center(
+                  child: Text(
+                    'Error: $error',
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ),
+                _ => Center(
+                  child: CircularProgressIndicator(color: colorScheme.primary),
+                ),
               },
             ),
           ],
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 110), // Lift above BottomNavigationBar
+        padding: const EdgeInsets.only(
+          bottom: 110,
+        ), // Lift above BottomNavigationBar
         child: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                 // Add new workout (default to day 0 or next available, but standalone logic applies)
-                 builder: (context) => EditWorkoutScreen(
-                   splitIndex: currentSplitIndex, // Pre-select current day or 0
-                 ),
+                // Add new workout (default to day 0 or next available, but standalone logic applies)
+                builder: (context) => EditWorkoutScreen(
+                  splitIndex: currentSplitIndex, // Pre-select current day or 0
+                ),
               ),
             );
           },
@@ -176,14 +194,12 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           child: Icon(Icons.add, color: colorScheme.onPrimary),
         ),
       ),
-
     );
   }
-  
+
   Widget _buildEmptyState(String message) {
     final colorScheme = Theme.of(context).colorScheme;
     return Center(
-
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -206,17 +222,13 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           const SizedBox(height: 8),
           Text(
             'Tap + to add a workout',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
-
         ],
       ),
     );
   }
-  
+
   Widget _buildSplitView(
     BuildContext context,
     WidgetRef ref,
@@ -228,87 +240,101 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     if (workouts.isEmpty) return _buildEmptyState('No workouts yet');
 
     final progressionAsync = ref.watch(workoutProgressionProvider);
-    
+
     return progressionAsync.when(
       data: (progression) {
         final todayCompleted = todayCompletedAsync.valueOrNull ?? [];
-        
+
         // 1. Unified Targets from provider
         final todaysWorkouts = progression.todayWorkouts;
         final tomorrowsWorkouts = progression.tomorrowWorkouts;
 
         // If user toggled "Show All", show standard list view
         if (_showAllWorkouts) {
-          return _buildWorkoutList(context, ref, workouts, todayCompletedAsync, workouts.length, progression);
+          return _buildWorkoutList(
+            context,
+            ref,
+            workouts,
+            todayCompletedAsync,
+            workouts.length,
+            progression,
+          );
         }
-        
+
         if (todaysWorkouts.isEmpty) {
-           return _buildEmptyState('Rest Day or Empty Split');
+          return _buildEmptyState('Rest Day or Empty Split');
         }
-        
+
         // Primary View: Scrollable Dashboard
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Text(
-                 "TODAY'S WORKOUTS",
-                 style: TextStyle(
-                   fontSize: 12,
-                   fontWeight: FontWeight.bold,
-                   color: Theme.of(context).colorScheme.primary,
-                   letterSpacing: 1.2,
-                 ),
-               ),
-               const SizedBox(height: 16),
-               ...todaysWorkouts.map((workout) => _WorkoutCard(
-                 workout: workout,
-                 isCompleted: todayCompleted.contains(workout.id),
-                 isActive: false, 
-                 isLocked: false,
-                 index: workout.orderIndex,
-                 total: workouts.length,
-                 onTap: () => _startWorkout(context, ref, workout, progression),
-                 onDelete: () => _confirmDelete(context, ref, workout),
-                 onRefresh: () => _refreshThumbnail(context, ref, workout),
-               )),
-               
-               if (tomorrowsWorkouts.isNotEmpty) ...[
-                 const SizedBox(height: 32),
-                 Text(
-                   "TOMORROW'S SPLIT",
-                   style: TextStyle(
-                     fontSize: 12,
-                     fontWeight: FontWeight.bold,
-                     color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                     letterSpacing: 1.2,
-                   ),
-                 ),
-                 const SizedBox(height: 16),
-                 ...tomorrowsWorkouts.map((workout) => _WorkoutCard(
-                   workout: workout,
-                   isCompleted: false,
-                   isActive: false, 
-                   isLocked: true, // Dimmed to show it's for tomorrow
-                   index: workout.orderIndex,
-                   total: workouts.length,
-                   onTap: null, // Disable start for tomorrow's workouts
-                   onDelete: () => _confirmDelete(context, ref, workout),
-                   onRefresh: () => _refreshThumbnail(context, ref, workout),
-                 )),
-               ],
+              Text(
+                "TODAY'S WORKOUTS",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...todaysWorkouts.map(
+                (workout) => _WorkoutCard(
+                  workout: workout,
+                  isCompleted: todayCompleted.contains(workout.id),
+                  isActive: false,
+                  isLocked: false,
+                  index: workout.orderIndex,
+                  total: workouts.length,
+                  onTap: () =>
+                      _startWorkout(context, ref, workout, progression),
+                  onDelete: () => _confirmDelete(context, ref, workout),
+                  onRefresh: () => _refreshThumbnail(context, ref, workout),
+                ),
+              ),
 
-               const SizedBox(height: 32),
-               
-               // "Manage All" button
-               Center(
-                 child: TextButton(
-                   onPressed: () => setState(() => _showAllWorkouts = true),
-                   child: const Text("Manage All Workouts"),
-                 ),
-               ),
-               const SizedBox(height: 40), 
+              if (tomorrowsWorkouts.isNotEmpty) ...[
+                const SizedBox(height: 32),
+                Text(
+                  "TOMORROW'S SPLIT",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...tomorrowsWorkouts.map(
+                  (workout) => _WorkoutCard(
+                    workout: workout,
+                    isCompleted: false,
+                    isActive: false,
+                    isLocked: true, // Dimmed to show it's for tomorrow
+                    index: workout.orderIndex,
+                    total: workouts.length,
+                    onTap: null, // Disable start for tomorrow's workouts
+                    onDelete: () => _confirmDelete(context, ref, workout),
+                    onRefresh: () => _refreshThumbnail(context, ref, workout),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 32),
+
+              // "Manage All" button
+              Center(
+                child: TextButton(
+                  onPressed: () => setState(() => _showAllWorkouts = true),
+                  child: const Text("Manage All Workouts"),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         );
@@ -329,7 +355,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // Legacy List View (Management Mode)
     final todayCompleted = todayCompletedAsync.valueOrNull ?? [];
     final activeSession = ref.watch(activeWorkoutSessionProvider);
-    
+
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: workouts.length,
@@ -344,45 +370,56 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         final workout = workouts[index];
         final isCompleted = todayCompleted.contains(workout.id);
         final isActive = activeSession?.workoutId == workout.id;
-        
+
         final isToday = workout.orderIndex == progression.splitIndex;
-        
+
         return _WorkoutCard(
           key: ValueKey(workout.id),
           workout: workout,
           isCompleted: isCompleted,
           isActive: isActive,
           isLocked: !isToday, // Lock visual if not today
-          index: workout.orderIndex, 
+          index: workout.orderIndex,
           total: totalCount,
-          onTap: isToday ? () => _startWorkout(context, ref, workout, progression) : null,
+          onTap: isToday
+              ? () => _startWorkout(context, ref, workout, progression)
+              : null,
           onDelete: () => _confirmDelete(context, ref, workout),
           onRefresh: () => _refreshThumbnail(context, ref, workout),
         );
       },
     );
   }
-  
-  Future<void> _startWorkout(BuildContext context, WidgetRef ref, Workout workout, WorkoutProgression progression) async {
+
+  Future<void> _startWorkout(
+    BuildContext context,
+    WidgetRef ref,
+    Workout workout,
+    WorkoutProgression progression,
+  ) async {
     // 1. Unified Locking Check
     if (workout.orderIndex != progression.splitIndex) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Stick to the plan! You can't jump ahead to future workouts."),
+            content: const Text(
+              "Stick to the plan! You can't jump ahead to future workouts.",
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
       return;
     }
-    
+
     // 2. Extra Safety: Block if day already completed
     if (progression.isCompletedToday) {
-       if (context.mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("You've crushed your goal for today! Rest and recover for tomorrow."),
+            content: Text(
+              "You've crushed your goal for today! Rest and recover for tomorrow.",
+            ),
           ),
         );
       }
@@ -391,49 +428,60 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     // Rest Day Logic
     if (workout.isRestDay) {
-       final colorScheme = Theme.of(context).colorScheme;
-       
-       final confirm = await showDialog<bool>(
-         context: context,
-         builder: (ctx) => AlertDialog(
-           backgroundColor: colorScheme.surfaceContainerHigh,
-           title: Text('Rest Day', style: TextStyle(color: colorScheme.onSurface)),
-           content: Text(
-             'Mark this days as rested? Proper recovery is key to progress.',
-             style: TextStyle(color: colorScheme.onSurfaceVariant),
-           ),
-           actions: [
-             TextButton(
-               onPressed: () => Navigator.pop(ctx, false),
-               child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
-             ),
-             FilledButton(
-               onPressed: () => Navigator.pop(ctx, true),
-               style: FilledButton.styleFrom(backgroundColor: colorScheme.primary),
-               child: Text('Confirm Rest', style: TextStyle(color: colorScheme.onPrimary)),
-             ),
-           ],
-         ),
-       );
-       
-       if (confirm == true) {
-         await ref.read(workoutManagerProvider.notifier).logRestDay(workout);
+      final colorScheme = Theme.of(context).colorScheme;
 
-         if (context.mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: const Text('Rest day logged. Recovery mode on!'),
-               backgroundColor: colorScheme.primary,
-             ),
-           );
-         }
-       }
-       return;
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: colorScheme.surfaceContainerHigh,
+          title: Text(
+            'Rest Day',
+            style: TextStyle(color: colorScheme.onSurface),
+          ),
+          content: Text(
+            'Mark this days as rested? Proper recovery is key to progress.',
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+              ),
+              child: Text(
+                'Confirm Rest',
+                style: TextStyle(color: colorScheme.onPrimary),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true) {
+        await ref.read(workoutManagerProvider.notifier).logRestDay(workout);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Rest day logged. Recovery mode on!'),
+              backgroundColor: colorScheme.primary,
+            ),
+          );
+        }
+      }
+      return;
     }
 
     // Standard Workout Logic
     await ref.read(activeWorkoutSessionProvider.notifier).startWorkout(workout);
-    
+
     if (context.mounted) {
       final session = ref.read(activeWorkoutSessionProvider);
       if (session != null) {
@@ -446,9 +494,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     }
   }
 
-  
-
-  
   void _confirmDelete(BuildContext context, WidgetRef ref, Workout workout) {
     final colorScheme = Theme.of(context).colorScheme;
     showDialog(
@@ -467,12 +512,17 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
           ),
 
           FilledButton(
             onPressed: () async {
-              await ref.read(workoutManagerProvider.notifier).deleteWorkout(workout.id);
+              await ref
+                  .read(workoutManagerProvider.notifier)
+                  .deleteWorkout(workout.id);
               if (context.mounted) {
                 Navigator.pop(context);
               }
@@ -485,11 +535,12 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       ),
     );
   }
+
   void _refreshThumbnail(BuildContext context, WidgetRef ref, Workout workout) {
     ref.read(workoutManagerProvider.notifier).regenerateThumbnail(workout);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Refreshing thumbnail...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Refreshing thumbnail...')));
   }
 }
 
@@ -503,7 +554,7 @@ class _WorkoutCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback onDelete;
   final VoidCallback onRefresh;
-  
+
   const _WorkoutCard({
     super.key,
     required this.workout,
@@ -516,12 +567,12 @@ class _WorkoutCard extends StatelessWidget {
     required this.onDelete,
     required this.onRefresh,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDisabled = isCompleted || isLocked;
-    
+
     return GestureDetector(
       onTap: isDisabled ? null : onTap,
       child: Opacity(
@@ -544,67 +595,86 @@ class _WorkoutCard extends StatelessWidget {
 
           child: Row(
             children: [
-            // Gradient thumbnail / icon
-            Builder(
-              builder: (context) {
-                final imageProvider = ImageUtils.resolveImageProvider(workout.thumbnailUrl);
-                final hasImage = imageProvider != null;
+              // Gradient thumbnail / icon
+              Builder(
+                builder: (context) {
+                  final imageProvider = ImageUtils.resolveImageProvider(
+                    workout.thumbnailUrl,
+                  );
+                  final hasImage = imageProvider != null;
 
-                return Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: !hasImage ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: _getGradientColors(index),
-                    ) : null,
-                    borderRadius: BorderRadius.circular(12),
-                    image: hasImage ? DecorationImage(
-                      image: imageProvider,
-                      fit: BoxFit.cover,
-                    ) : null,
-                  ),
-                  child: !hasImage ? Icon(
-                    workout.isRestDay ? Icons.spa : _getWorkoutIcon(workout.clockType),
-                    color: Colors.white,
-                    size: 24,
-                  ) : null,
-                );
-              },
-            ),
+                  return Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: !hasImage
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _getGradientColors(index),
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(12),
+                      image: hasImage
+                          ? DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: !hasImage
+                        ? Icon(
+                            workout.isRestDay
+                                ? Icons.spa
+                                : _getWorkoutIcon(workout.clockType),
+                            color: Colors.white,
+                            size: 24,
+                          )
+                        : null,
+                  );
+                },
+              ),
 
-            const SizedBox(width: 16),
-            
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title row with menu
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          workout.name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isCompleted ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
-                            decoration: isCompleted ? TextDecoration.lineThrough : null,
+              const SizedBox(width: 16),
+
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title row with menu
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            workout.name,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isCompleted
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                              decoration: isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
                           ),
-
                         ),
-                      ),
-                      // Edit/Delete Menu (Always enabled now)
-                      SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: PopupMenuButton<String>(
-                          icon: Icon(Icons.more_vert, color: colorScheme.onSurfaceVariant, size: 20),
-                          color: colorScheme.surfaceContainerHigh,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          onSelected: (value) {
+                        // Edit/Delete Menu (Always enabled now)
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: PopupMenuButton<String>(
+                            icon: Icon(
+                              Icons.more_vert,
+                              color: colorScheme.onSurfaceVariant,
+                              size: 20,
+                            ),
+                            color: colorScheme.surfaceContainerHigh,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            onSelected: (value) {
                               if (value == 'edit') {
                                 // Navigate to edit
                                 Navigator.of(context).push(
@@ -614,118 +684,144 @@ class _WorkoutCard extends StatelessWidget {
                                     ),
                                   ),
                                 );
-                            } else if (value == 'refresh_thumb') {
+                              } else if (value == 'refresh_thumb') {
                                 onRefresh();
-                            } else if (value == 'delete') {
-                              onDelete();
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_outlined, size: 20, color: Colors.white),
-                                  SizedBox(width: 12),
-                                  Text('Edit', style: TextStyle(color: Colors.white)),
-                                ],
+                              } else if (value == 'delete') {
+                                onDelete();
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.edit_outlined,
+                                      size: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'Edit',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            PopupMenuItem(
-                              value: 'refresh_thumb',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.refresh, size: 20, color: colorScheme.primary),
-                                  const SizedBox(width: 12),
-                                  Text('Refresh Image', style: TextStyle(color: colorScheme.onSurface)),
-                                ],
+                              PopupMenuItem(
+                                value: 'refresh_thumb',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.refresh,
+                                      size: 20,
+                                      color: colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Refresh Image',
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
-                                  SizedBox(width: 12),
-                                  Text('Delete', style: TextStyle(color: Colors.redAccent)),
-                                ],
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.delete_outline,
+                                      size: 20,
+                                      color: Colors.redAccent,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // Status row
-                  Row(
-                    children: [
-                      if (isActive) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(4),
+                            ],
                           ),
-                          child: Text(
-                            'IN PROGRESS',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onPrimary,
-                            ),
-                          ),
-
                         ),
-                        const SizedBox(width: 8),
                       ],
-                      if (isCompleted)
-                        Icon(
-                          Icons.check_circle,
-                          color: colorScheme.primary,
-                          size: 16,
-                        ),
-
-                      if (isCompleted) const SizedBox(width: 4),
-                      Text(
-                        _getSubtitle(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isCompleted ? colorScheme.primary : colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-
-                      const Spacer(),
-                      
-                      // Play button (miniature) if not completed/active
-                      if (!isCompleted && !isActive)
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
+                    ),
+                    const SizedBox(height: 4),
+                    // Status row
+                    Row(
+                      children: [
+                        if (isActive) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'IN PROGRESS',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onPrimary,
+                              ),
+                            ),
                           ),
-
-                          child: Icon(
-                            Icons.play_arrow,
-                            color: colorScheme.onPrimary,
+                          const SizedBox(width: 8),
+                        ],
+                        if (isCompleted)
+                          Icon(
+                            Icons.check_circle,
+                            color: colorScheme.primary,
                             size: 16,
                           ),
 
+                        if (isCompleted) const SizedBox(width: 4),
+                        Text(
+                          _getSubtitle(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isCompleted
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                    ],
-                  ),
-                ],
+
+                        const Spacer(),
+
+                        // Play button (miniature) if not completed/active
+                        if (!isCompleted && !isActive)
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+
+                            child: Icon(
+                              Icons.play_arrow,
+                              color: colorScheme.onPrimary,
+                              size: 16,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
           ),
         ),
       ),
     );
   }
-  
+
   List<Color> _getGradientColors(int index) {
     final gradients = [
       [const Color(0xFF4A00E0), const Color(0xFF8E2DE2)], // Purple
@@ -733,16 +829,17 @@ class _WorkoutCard extends StatelessWidget {
       [const Color(0xFFE91E63), const Color(0xFF9C27B0)], // Pink
       [const Color(0xFF448AFF), const Color(0xFF2979FF)], // Indigo
     ];
-    
+
     if (workout.isRestDay) {
-      return [const Color(0xFF56CCF2), const Color(0xFF2F80ED)]; // Light Blue for Rest
+      return [
+        const Color(0xFF56CCF2),
+        const Color(0xFF2F80ED),
+      ]; // Light Blue for Rest
     }
 
-    
     return gradients[index % gradients.length];
   }
 
-  
   IconData _getWorkoutIcon(ClockType type) {
     return switch (type) {
       ClockType.none => Icons.fitness_center,
@@ -751,17 +848,17 @@ class _WorkoutCard extends StatelessWidget {
       ClockType.alarm => Icons.alarm,
     };
   }
-  
+
   String _getSubtitle() {
     if (isCompleted) return 'Completed';
     if (workout.isRestDay) return 'Rest & Recovery';
     return switch (workout.clockType) {
-
       ClockType.none => 'Freestyle',
       ClockType.stopwatch => 'Stopwatch',
-      ClockType.timer => workout.timerDurationSeconds != null
-          ? '${workout.timerDurationSeconds! ~/ 60} min'
-          : 'Timer',
+      ClockType.timer =>
+        workout.timerDurationSeconds != null
+            ? '${workout.timerDurationSeconds! ~/ 60} min'
+            : 'Timer',
       ClockType.alarm => 'Alarm',
     };
   }

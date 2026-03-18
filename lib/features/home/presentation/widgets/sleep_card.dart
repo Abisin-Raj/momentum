@@ -5,7 +5,6 @@ import 'package:momentum/core/providers/database_providers.dart';
 import 'package:momentum/core/providers/health_connect_provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:momentum/core/providers/sleep_providers.dart';
-import 'package:momentum/core/utils/sleep_utils.dart';
 import 'themed_card.dart';
 
 class SleepCard extends ConsumerWidget {
@@ -22,7 +21,11 @@ class SleepCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.nights_stay_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
+              Icon(
+                Icons.nights_stay_rounded,
+                color: Theme.of(context).colorScheme.primary,
+                size: 22,
+              ),
               const SizedBox(width: 12),
               Text(
                 'SLEEP TRACKER',
@@ -38,17 +41,23 @@ class SleepCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
-          ref.watch(sleepSummaryProvider).when(
-            data: (summary) => _buildSleepContent(context, ref, summary),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => const Text('Error loading sleep data'),
-          ),
+          ref
+              .watch(sleepSummaryProvider)
+              .when(
+                data: (summary) => _buildSleepContent(context, ref, summary),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => const Text('Error loading sleep data'),
+              ),
         ],
       ),
     );
   }
 
-  Widget _buildSyncButton(BuildContext context, WidgetRef ref, HealthState state) {
+  Widget _buildSyncButton(
+    BuildContext context,
+    WidgetRef ref,
+    HealthState state,
+  ) {
     if (state.isLoading) {
       return const SizedBox(
         width: 16,
@@ -65,7 +74,11 @@ class SleepCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSleepContent(BuildContext context, WidgetRef ref, SleepSummary summary) {
+  Widget _buildSleepContent(
+    BuildContext context,
+    WidgetRef ref,
+    SleepSummary summary,
+  ) {
     final lastNight = summary.lastNight;
     final avgHours = summary.avgHours7d;
 
@@ -82,7 +95,9 @@ class SleepCard extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -91,19 +106,37 @@ class SleepCard extends ConsumerWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      lastNight != null ? (lastNight.durationMinutes / 60.0).toStringAsFixed(1) : "0.0",
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                      lastNight != null
+                          ? (lastNight.durationMinutes / 60.0).toStringAsFixed(
+                              1,
+                            )
+                          : "0.0",
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       "hrs",
-                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
-            _buildStatBox(context, "7D AVG", "${avgHours.toStringAsFixed(1)}h", Icons.trending_up, Theme.of(context).colorScheme.primary),
+            _buildStatBox(
+              context,
+              "7D AVG",
+              "${avgHours.toStringAsFixed(1)}h",
+              Icons.trending_up,
+              Theme.of(context).colorScheme.primary,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -117,7 +150,9 @@ class SleepCard extends ConsumerWidget {
             label: const Text('Log Manually'),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -125,8 +160,13 @@ class SleepCard extends ConsumerWidget {
     );
   }
 
-
-  Widget _buildStatBox(BuildContext context, String label, String value, IconData icon, Color color) {
+  Widget _buildStatBox(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     // Removed unused colorScheme
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -143,7 +183,11 @@ class SleepCard extends ConsumerWidget {
               const SizedBox(width: 4),
               Text(
                 label,
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
             ],
           ),
@@ -160,7 +204,7 @@ class SleepCard extends ConsumerWidget {
   Widget _buildQualityBar(BuildContext context, int quality) {
     final colorScheme = Theme.of(context).colorScheme;
     final double percent = (quality.toDouble() / 10.0).clamp(0.0, 1.0);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -169,11 +213,19 @@ class SleepCard extends ConsumerWidget {
           children: [
             Text(
               "SLEEP QUALITY",
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
             ),
             Text(
               quality > 0 ? "$quality/10" : "Not set",
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.primary),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
             ),
           ],
         ),
@@ -183,9 +235,13 @@ class SleepCard extends ConsumerWidget {
           child: LinearProgressIndicator(
             value: quality > 0 ? percent : 0.05,
             minHeight: 6,
-            backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.3,
+            ),
             valueColor: AlwaysStoppedAnimation<Color>(
-              quality > 7 ? Colors.greenAccent : (quality > 4 ? Colors.orangeAccent : Colors.redAccent)
+              quality > 7
+                  ? Colors.greenAccent
+                  : (quality > 4 ? Colors.orangeAccent : Colors.redAccent),
             ),
           ),
         ),
@@ -196,7 +252,7 @@ class SleepCard extends ConsumerWidget {
   void _showManualLogDialog(BuildContext context, WidgetRef ref) async {
     double duration = 7.0;
     int quality = 7;
-    
+
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -225,16 +281,25 @@ class SleepCard extends ConsumerWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () {
                 final date = DateTime.now();
-                ref.read(appDatabaseProvider).addSleepLog(SleepLogsCompanion(
-                  date: drift.Value(DateTime(date.year, date.month, date.day)),
-                  durationMinutes: drift.Value((duration * 60).round()),
-                  quality: drift.Value(quality),
-                  isSynced: const drift.Value(false),
-                ));
+                ref
+                    .read(appDatabaseProvider)
+                    .addSleepLog(
+                      SleepLogsCompanion(
+                        date: drift.Value(
+                          DateTime(date.year, date.month, date.day),
+                        ),
+                        durationMinutes: drift.Value((duration * 60).round()),
+                        quality: drift.Value(quality),
+                        isSynced: const drift.Value(false),
+                      ),
+                    );
                 Navigator.pop(context);
               },
               child: const Text('Save'),

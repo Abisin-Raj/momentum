@@ -307,7 +307,7 @@ class _SplitSetupScreenState extends ConsumerState<SplitSetupScreen> {
       Future<void> createDay({
         required String name,
         required String shortCode,
-        required String thumbnailUrl,
+        String? thumbnailUrl,
         required int dayIndex,
         required ClockType clockType,
         required bool isRestDay,

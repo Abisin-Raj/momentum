@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:momentum/core/providers/database_providers.dart';
+import 'package:momentum/core/database/app_database.dart';
 import 'package:momentum/core/constants/muscle_data.dart';
 import 'package:momentum/core/utils/calorie_calculator.dart';
 
@@ -132,6 +133,7 @@ final dailyBurnProvider = FutureProvider<int>((ref) async {
   
   return totalCalories;
 });
+
 
 final netCaloriesProvider = FutureProvider<Map<String, int>>((ref) async {
   // Fetch nutrition and burn data in parallel for better performance

@@ -7,7 +7,7 @@ part of 'workout_providers.dart';
 // **************************************************************************
 
 String _$activeWorkoutSessionHash() =>
-    r'eae01d7adaa022d41b28d94743179d73a2d357e2';
+    r'eaf79e9a7a7464874337785ae50f85ef215868c8';
 
 /// Notifier for managing active workout session
 ///
@@ -25,7 +25,7 @@ final activeWorkoutSessionProvider =
     );
 
 typedef _$ActiveWorkoutSession = Notifier<ActiveSession?>;
-String _$workoutManagerHash() => r'30eec630413dcf0dded54dce8c80acfa29b92557';
+String _$workoutManagerHash() => r'7fe4f8bcc763b16254a42acbb2224efae32d6f4a';
 
 /// Provider for adding a new workout
 ///
