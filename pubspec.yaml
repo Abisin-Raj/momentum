@@ -11,73 +11,64 @@ dependencies:
     sdk: flutter
   
   # State Management
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^3.3.1
+  riverpod_annotation: ^4.0.2
   
   # Database (Offline-First)
-  drift: ^2.20.2
-  sqlite3_flutter_libs: ^0.5.24
+  drift: ^2.31.0
+  sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.4
   path: ^1.9.0
   
   # Routing
-  go_router: ^14.2.0
+  go_router: ^17.1.0
   url_launcher: ^6.3.0
   
   # UI & Theme
   dynamic_color: ^1.7.0
-  google_fonts: ^6.2.1
+  google_fonts: ^8.0.2
   
   # Android Widget
-  home_widget: ^0.7.0
+  home_widget: ^0.9.0
   shared_preferences: ^2.3.2
   
   # Utilities
-  intl: ^0.19.0
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
-  uuid: ^4.5.0
+  intl: ^0.20.2
   http: ^1.2.2
-  connectivity_plus: ^6.0.5
+  connectivity_plus: ^7.0.0
   image_picker: ^1.2.1
   
   # Charts & Visuals
-  fl_chart: ^0.68.0
+  fl_chart: ^1.2.0
   
   # Export & Backup
-  share_plus: ^10.0.0
-  file_picker: ^8.0.0
+  share_plus: ^12.0.1
+  file_picker: ^10.3.10
   
   # Health Connect
-  health: ^11.0.0
-  permission_handler: ^11.3.1
+  health: ^13.3.1
+  permission_handler: ^12.0.1
   google_generative_ai: ^0.4.7
   shimmer: ^3.0.0
-  camera: ^0.10.6
   percent_indicator: ^4.2.3
-  model_viewer_plus: ^1.10.0
-  flutter_secure_storage: ^9.2.2
+  flutter_secure_storage: ^10.0.0
   webview_flutter: ^4.8.0
-  wakelock_plus: ^1.4.0
-  flutter_local_notifications: ^17.2.2
+  flutter_local_notifications: ^21.0.0
   workmanager: ^0.9.0+3
-  flutter_displaymode: ^0.6.0
+  flutter_displaymode: ^0.7.0
   crypto: ^3.0.7
   cached_network_image: ^3.4.1
-
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   
   # Code Generation
-  build_runner: ^2.4.11
-  drift_dev: ^2.20.2
-  riverpod_generator: ^2.6.1
-  freezed: ^2.5.7
-  json_serializable: ^6.8.0
-  flutter_launcher_icons: ^0.13.1
+  build_runner: ^2.13.0
+  drift_dev: ^2.31.0
+  riverpod_generator: ^4.0.3
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -85,7 +76,6 @@ flutter:
     - assets/images/
     - assets/3d/
     - assets/3d/js/
-
 
 flutter_launcher_icons:
   android: "launcher_icon"
